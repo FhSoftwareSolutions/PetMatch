@@ -1,0 +1,24 @@
+# PetMatch - Ambiente de desenvolvimento local
+# Sobe uma instância do MongoDB acessível em mongodb://localhost:27017
+#
+# Uso:
+#   docker compose up -d      # inicia o MongoDB em background
+#   docker compose down       # para o container (mantém os dados no volume)
+#   docker compose down -v    # para e APAGA os dados
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: petmatch-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - petmatch-mongo-data:/data/db
+    # Ambiente local sem autenticação complexa para facilitar o desenvolvimento.
+    # Em produção, defina MONGO_INITDB_ROOT_USERNAME / MONGO_INITDB_ROOT_PASSWORD
+    # e use uma connection string com credenciais.
+
+volumes:
+  petmatch-mongo-data:
+    driver: local
