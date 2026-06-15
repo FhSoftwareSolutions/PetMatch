@@ -17,8 +17,6 @@
       "package": "com.petmatch.app"
     },
     "web": {
-      "bundler": "metro",
-      "output": "single",
       "favicon": "./assets/favicon.png"
     }
   }
