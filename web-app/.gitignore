@@ -1,0 +1,19 @@
+# Dependências e build
+node_modules/
+dist/
+dist-ssr/
+
+# Cache do Vite
+.vite/
+
+# Ambiente
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
