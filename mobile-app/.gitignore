@@ -1,0 +1,23 @@
+# Dependências
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Ambiente
+.env
+.env.local
+
+# Nativo
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Logs / OS
+*.log
+.DS_Store
