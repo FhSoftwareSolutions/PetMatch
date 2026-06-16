@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Types } from 'mongoose';
 
+import { OwnerId } from '../../common/owner-id.decorator';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { PetsService } from './pets.service';
 
@@ -23,9 +25,9 @@ export class PetsController {
     return petId ? this.petsService.findRecommendedFeed(petId) : this.petsService.findFeed();
   }
 
-  /** POST /pets — cadastra um novo pet. */
+  /** POST /pets — cadastra um novo pet (dono = identidade do header X-Owner-Id). */
   @Post()
-  create(@Body() dto: CreatePetDto) {
-    return this.petsService.create(dto);
+  create(@Body() dto: CreatePetDto, @OwnerId() ownerId: Types.ObjectId) {
+    return this.petsService.create(dto, ownerId);
   }
 }

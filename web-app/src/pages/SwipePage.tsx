@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchFeed, fetchPets, type Pet } from '../services/api';
+import { fetchFeed, fetchPets, recordSwipe, type Pet } from '../services/api';
 import { getMyPet, setMyPet, type MyPet } from '../lib/session';
 import PetCard, { type PetCardHandle, type SwipeDir } from '../components/PetCard';
 import ActionBar from '../components/ActionBar';
@@ -50,7 +50,15 @@ export default function SwipePage() {
   function handleSwipe(dir: SwipeDir, pet: Pet) {
     setHistory((h) => [...h, pet]);
     setDeck((d) => d.slice(1));
-    // Match simulado: ~55% dos likes viram match enquanto não há lógica real.
+    // Persiste o swipe (fire-and-forget para não travar o gesto). Só com origem
+    // ("meu pet"): a partir daí o feed recomendado para de repetir este pet.
+    if (myPet) {
+      void recordSwipe(myPet.id, pet.id, dir === 'like' ? 'like' : 'dislike').catch(() => {
+        /* swipe é best-effort; uma falha de rede não interrompe a navegação */
+      });
+    }
+    // Match simulado: ~55% dos likes viram match. A Etapa 2 troca isto pela
+    // reciprocidade real devolvida por recordSwipe (matched).
     if (dir === 'like' && Math.random() < 0.55) setMatch(pet);
   }
 

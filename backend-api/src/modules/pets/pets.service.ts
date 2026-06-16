@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { coordsForCity, DEFAULT_CITY } from '../../common/cities';
 import { CreatePetDto } from './dto/create-pet.dto';
@@ -105,8 +105,8 @@ export class PetsService {
     }
   }
 
-  /** Cadastra um novo pet (atribuído ao dono demo enquanto não há login). */
-  async create(dto: CreatePetDto): Promise<PetResponse> {
+  /** Cadastra um novo pet, atribuído ao dono informado (cai no demo se ausente). */
+  async create(dto: CreatePetDto, ownerId: Types.ObjectId = DEMO_OWNER_ID): Promise<PetResponse> {
     const city = dto.city ?? DEFAULT_CITY;
     const created = await this.petModel.create({
       name: dto.name,
@@ -120,7 +120,7 @@ export class PetsService {
       mainPhotoUrl: dto.mainPhotoUrl,
       photos: dto.mainPhotoUrl ? [dto.mainPhotoUrl] : [],
       temperament: dto.temperament ?? [],
-      ownerId: DEMO_OWNER_ID,
+      ownerId,
       // location é obrigatório no schema; derivamos da cidade escolhida.
       location: { type: 'Point', coordinates: coordsForCity(city) },
       status: 'available',

@@ -5,6 +5,8 @@
  * para os endereços locais padrão quando não definidas.
  */
 
+import { getMyOwnerId } from '../lib/session';
+
 /** URL base da API NestJS (backend-api). */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
@@ -73,11 +75,16 @@ export async function fetchFeed(petId: string): Promise<Pet[]> {
   return res.json();
 }
 
+/** Cabeçalhos de uma escrita identificada pelo ownerId estável do navegador. */
+function writeHeaders(): HeadersInit {
+  return { 'Content-Type': 'application/json', 'X-Owner-Id': getMyOwnerId() };
+}
+
 /** Cadastra um novo pet e devolve o registro criado. */
 export async function createPet(input: NewPet): Promise<Pet> {
   const res = await fetch(`${API_BASE_URL}/pets`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: writeHeaders(),
     body: JSON.stringify(input),
   });
   if (!res.ok) {
@@ -92,6 +99,35 @@ export async function createPet(input: NewPet): Promise<Pet> {
       /* corpo sem JSON — mantém o detalhe padrão */
     }
     throw new Error(`Falha ao cadastrar o pet: ${detail}`);
+  }
+  return res.json();
+}
+
+export type SwipeType = 'like' | 'dislike';
+
+/** Resultado de registrar um swipe. `matched` refletirá reciprocidade real na Etapa 2. */
+export interface SwipeResult {
+  matched: boolean;
+}
+
+/**
+ * Registra um like/dislike do meu pet (origem) sobre outro pet (alvo).
+ *
+ * Persistir o swipe faz o feed recomendado parar de repetir pets já avaliados
+ * (o recommendation-engine lê os swipes da origem para excluí-los).
+ */
+export async function recordSwipe(
+  petId: string,
+  targetPetId: string,
+  type: SwipeType,
+): Promise<SwipeResult> {
+  const res = await fetch(`${API_BASE_URL}/swipes`, {
+    method: 'POST',
+    headers: writeHeaders(),
+    body: JSON.stringify({ petId, targetPetId, type }),
+  });
+  if (!res.ok) {
+    throw new Error(`Não foi possível registrar o swipe (HTTP ${res.status}).`);
   }
   return res.json();
 }
