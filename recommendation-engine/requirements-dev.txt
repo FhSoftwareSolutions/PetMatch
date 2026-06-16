@@ -1,0 +1,6 @@
+# PetMatch - Motor de Recomendação (desenvolvimento)
+-r requirements.txt
+pytest
+httpx
+ruff
+black

@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
+# Caches de ferramentas
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
 # Ambientes virtuais
 .venv/
 venv/
