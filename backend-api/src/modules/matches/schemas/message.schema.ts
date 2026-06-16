@@ -35,7 +35,7 @@ export class Message {
   @Prop({ default: 'text', enum: ['text', 'image', 'sticker'] })
   type!: string;
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
   metadata!: Record<string, any>;
 
   @Prop()

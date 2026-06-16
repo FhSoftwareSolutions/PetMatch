@@ -95,7 +95,7 @@ export class Pet {
   @Prop({ type: [String], default: [] })
   recommendationTags!: string[];
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
   metadata!: Record<string, any>;
 
   @Prop()

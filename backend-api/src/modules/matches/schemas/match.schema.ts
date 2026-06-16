@@ -82,7 +82,7 @@ export class Match {
   @Prop({ default: 'mutual_like', enum: ['mutual_like', 'recomendacao', 'curadoria'] })
   matchReason!: string;
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
   meta!: Record<string, any>;
 
   @Prop({ type: MatchSummary, default: () => ({}) })
