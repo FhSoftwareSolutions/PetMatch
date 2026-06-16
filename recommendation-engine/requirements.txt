@@ -1,4 +1,7 @@
+# PetMatch - Motor de Recomendação (runtime)
 fastapi
-uvicorn
+uvicorn[standard]
 pymongo
 scikit-learn
+numpy
+pydantic-settings

@@ -1,0 +1,14 @@
+{
+  "name": "petmatch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Orquestrador de desenvolvimento do monorepo PetMatch (sobe todos os serviços de uma vez).",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npm --prefix web-app run dev",
+    "dev:api": "npm --prefix backend-api run start:dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "install:all": "npm --prefix backend-api install && npm --prefix web-app install"
+  }
+}

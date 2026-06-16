@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
+/** Tipo do documento Mongoose de Pet (classe + métodos do Document). */
 export type PetDocument = Pet & Document;
 
+/** Informações de saúde do pet (subdocumento). */
 @Schema({ _id: false })
 export class PetLocation {
   @Prop({ required: true, enum: ['Point'] })
@@ -19,6 +21,17 @@ export class PetLocation {
   coordinates!: number[];
 }
 
+/**
+ * Perfil do pet — base do feed de recomendação.
+ *
+ * Os enums em português refletem o domínio do produto:
+ * - gender:  macho | femea
+ * - size:    pequeno | medio | grande
+ * - seeking: socializacao (brincar) | cruzamento | ambos
+ * - status:  available (visível) | hidden | adopted
+ *
+ * `timestamps: true` gerencia `createdAt`/`updatedAt` automaticamente.
+ */
 @Schema({ collection: 'pets', timestamps: true })
 export class Pet {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
@@ -78,20 +91,21 @@ export class Pet {
   @Prop({ default: 'available', enum: ['available', 'hidden', 'adopted'] })
   status!: string;
 
+  // Tags livres usadas pelo recommendation-engine para enriquecer o ranking.
   @Prop({ type: [String], default: [] })
   recommendationTags!: string[];
 
   @Prop({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
   metadata!: Record<string, any>;
-
-  @Prop()
-  createdAt!: Date;
-
-  @Prop()
-  updatedAt!: Date;
 }
 
 export const PetSchema = SchemaFactory.createForClass(Pet);
+
+// Índices.
+// - 2dsphere em `location`: busca por proximidade ($geoNear / $near).
+// - índice composto: otimiza o recall do motor (geo + objetivo + disponibilidade).
+//   O recommendation-engine passa `key: "location"` no $geoNear justamente para
+//   desambiguar entre os dois índices geográficos abaixo.
 PetSchema.index({ location: '2dsphere' });
 PetSchema.index({ ownerId: 1 });
 PetSchema.index({ purpose: 1 });

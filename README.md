@@ -2,7 +2,10 @@
 
 **"Tinder para Pets"** — um aplicativo que conecta donos de pets para **cruzamento** ou **socialização (brincadeiras)**, usando um sistema de recomendação baseado em **geolocalização** e **filtragem de conteúdo**.
 
-> **Observação:** este repositório contém apenas o **andaime (scaffolding)** inicial — infraestrutura, dependências e pontos de entrada de cada serviço. A lógica de negócio ainda não foi implementada.
+> **Observação:** o projeto está em construção. O **motor de recomendação** já
+> tem o pipeline (geo + conteúdo) implementado e testado, e o **frontend web**
+> já roda a tela de swipe com dados mock. O **backend-api** (modelagem do banco)
+> e o **app mobile** ainda são andaimes (scaffolding) — sem lógica de negócio.
 
 ---
 
@@ -41,6 +44,20 @@ PetMatch/
 ---
 
 ## Como rodar cada serviço
+
+### Tudo de uma vez (atalho)
+
+Na raiz do projeto, sobe **MongoDB + motor de IA + backend + web-app** com um
+único comando (logs combinados e coloridos por serviço):
+
+```bash
+npm run dev
+```
+
+Pré-requisitos: dependências instaladas (`npm run install:all` para os serviços
+Node e o `.venv` do `recommendation-engine`) e o Docker rodando. Encerre com
+`Ctrl+C` — o MongoDB segue em background (pare com `npm run db:down`). O app
+mobile (Expo) roda à parte. Para subir um serviço isolado, siga os passos abaixo.
 
 ### 0. Banco de Dados (MongoDB via Docker)
 
@@ -92,10 +109,12 @@ Use o **Expo Go** no celular (escaneando o QR Code) ou um emulador Android/iOS.
 ```bash
 cd web-app
 npm install
+cp .env.example .env   # opcional: ajusta as URLs dos serviços
 npm run dev
 ```
 
-A aplicação web sobe em `http://localhost:5173`.
+A aplicação web sobe em `http://localhost:5173` com a tela de **swipe** (deck de
+pets com dados mock). Detalhes em [`web-app/README.md`](web-app/README.md).
 
 ---
 
@@ -136,9 +155,9 @@ Roteiro de implementação sugerido, mapeado na stack atual. Cada item parte do 
 
 ### Frontend Web (React + Vite)
 
-- Adicionar **roteamento** (`react-router-dom`) e estruturar as páginas em `src/pages`.
-- Reaproveitar a **camada de serviços** (`src/services`) para consumir a API NestJS.
-- Definir o propósito do web (painel administrativo, landing público, ou versão desktop do app) e construir as telas correspondentes.
+- A tela de **swipe** (deck, histórico, match) já existe em `src/pages` e `src/components`, hoje com dados mock (`src/data/pets.ts`).
+- Consumir pets reais da API NestJS / motor de recomendação pela **camada de serviços** (`src/services/api.ts`), no lugar do mock.
+- Adicionar **roteamento** (`react-router-dom`) e novas telas (login, perfil, lista de matches, chat).
 
 ### Transversais
 

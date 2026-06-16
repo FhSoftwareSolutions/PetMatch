@@ -1,0 +1,25 @@
+[project]
+name = "petmatch-recommendation-engine"
+version = "0.2.0"
+description = "Motor de recomendação do PetMatch (geolocalização + filtragem de conteúdo)."
+requires-python = ">=3.10"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B"]
+# Comprimento de linha fica a cargo do black.
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Padrão idiomático do FastAPI: Depends() em defaults de argumento.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
