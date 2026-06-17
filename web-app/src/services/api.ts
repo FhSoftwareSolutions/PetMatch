@@ -105,7 +105,7 @@ export async function createPet(input: NewPet): Promise<Pet> {
 
 export type SwipeType = 'like' | 'dislike';
 
-/** Resultado de registrar um swipe. `matched` refletirá reciprocidade real na Etapa 2. */
+/** Resultado de registrar um swipe. `matched` indica reciprocidade real (o alvo já curtiu). */
 export interface SwipeResult {
   matched: boolean;
 }

@@ -7,8 +7,9 @@ import { Swipe, SwipeDocument } from './schemas/swipe.schema';
 
 /** Resultado de registrar um swipe. */
 export interface SwipeResult {
-  // Se este like fechou um match recíproco. Sempre false na Etapa 1 (a detecção
-  // de reciprocidade + criação do Match entram na Etapa 2).
+  // true quando este like fecha um match recíproco (o alvo já havia curtido a
+  // origem). A PERSISTÊNCIA do Match + o chat ficam para a Etapa 2; aqui apenas
+  // sinalizamos a reciprocidade real para o frontend exibir a tela de match.
   matched: boolean;
 }
 
@@ -27,14 +28,22 @@ export class SwipesService {
    * `petId` de origem), então o feed deixa de repetir pets já vistos.
    */
   async record(dto: CreateSwipeDto, ownerId: Types.ObjectId): Promise<SwipeResult> {
+    const petId = new Types.ObjectId(dto.petId);
+    const targetPetId = new Types.ObjectId(dto.targetPetId);
+
     await this.swipeModel.updateOne(
-      {
-        petId: new Types.ObjectId(dto.petId),
-        targetPetId: new Types.ObjectId(dto.targetPetId),
-      },
+      { petId, targetPetId },
       { $set: { type: dto.type, ownerId }, $setOnInsert: { context: 'feed' } },
       { upsert: true },
     );
-    return { matched: false };
+
+    // Match recíproco: só em likes e quando o alvo já tinha curtido a origem.
+    if (dto.type !== 'like') return { matched: false };
+    const reciprocal = await this.swipeModel.exists({
+      petId: targetPetId,
+      targetPetId: petId,
+      type: 'like',
+    });
+    return { matched: Boolean(reciprocal) };
   }
 }

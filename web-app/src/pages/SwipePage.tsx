@@ -50,16 +50,20 @@ export default function SwipePage() {
   function handleSwipe(dir: SwipeDir, pet: Pet) {
     setHistory((h) => [...h, pet]);
     setDeck((d) => d.slice(1));
-    // Persiste o swipe (fire-and-forget para não travar o gesto). Só com origem
-    // ("meu pet"): a partir daí o feed recomendado para de repetir este pet.
-    if (myPet) {
-      void recordSwipe(myPet.id, pet.id, dir === 'like' ? 'like' : 'dislike').catch(() => {
+
+    // Sem "meu pet" (origem) não há o que registrar/matchear.
+    if (!myPet) return;
+
+    const type = dir === 'like' ? 'like' : 'dislike';
+    // Persiste o swipe; em likes, usa a reciprocidade REAL devolvida pelo backend
+    // (matched) para abrir a tela de match. É best-effort: falha de rede não trava.
+    void recordSwipe(myPet.id, pet.id, type)
+      .then((res) => {
+        if (dir === 'like' && res.matched) setMatch(pet);
+      })
+      .catch(() => {
         /* swipe é best-effort; uma falha de rede não interrompe a navegação */
       });
-    }
-    // Match simulado: ~55% dos likes viram match. A Etapa 2 troca isto pela
-    // reciprocidade real devolvida por recordSwipe (matched).
-    if (dir === 'like' && Math.random() < 0.55) setMatch(pet);
   }
 
   /** Desfaz o último swipe, devolvendo o pet ao topo do deck. */
