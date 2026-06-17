@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchFeed, fetchPets, recordSwipe, type Pet } from '../services/api';
 import { getMyPet, setMyPet, type MyPet } from '../lib/session';
 import PetCard, { type PetCardHandle, type SwipeDir } from '../components/PetCard';
 import ActionBar from '../components/ActionBar';
 import MatchModal from '../components/MatchModal';
 import RegisterPetPage from './RegisterPetPage';
+
+// Marca, no navegador, que o usuário já passou pelo cadastro inicial.
+const ONBOARDED_KEY = 'petmatch_onboarded';
 
 /**
  * Tela principal de descoberta.
@@ -14,13 +18,17 @@ import RegisterPetPage from './RegisterPetPage';
  * histórico para "voltar", mostra a tela de match e abre o cadastro como overlay.
  */
 export default function SwipePage() {
+  const navigate = useNavigate();
   const [myPet, setMyPetState] = useState<MyPet | null>(() => getMyPet());
   const [deck, setDeck] = useState<Pet[]>([]);
   const [history, setHistory] = useState<Pet[]>([]);
-  const [match, setMatch] = useState<Pet | null>(null);
+  const [match, setMatch] = useState<{ pet: Pet; matchId?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showRegister, setShowRegister] = useState(false);
+  // Na 1ª visita (sem pet e sem onboarding) abre o cadastro automaticamente.
+  const [showRegister, setShowRegister] = useState(
+    () => !getMyPet() && !localStorage.getItem(ONBOARDED_KEY),
+  );
   // Ref do card de cima, usada pelos botões da ActionBar para disparar o swipe.
   const topCardRef = useRef<PetCardHandle>(null);
 
@@ -56,10 +64,10 @@ export default function SwipePage() {
 
     const type = dir === 'like' ? 'like' : 'dislike';
     // Persiste o swipe; em likes, usa a reciprocidade REAL devolvida pelo backend
-    // (matched) para abrir a tela de match. É best-effort: falha de rede não trava.
+    // (matched + matchId) para abrir a tela de match. Best-effort: falha não trava.
     void recordSwipe(myPet.id, pet.id, type)
       .then((res) => {
-        if (dir === 'like' && res.matched) setMatch(pet);
+        if (dir === 'like' && res.matched) setMatch({ pet, matchId: res.matchId });
       })
       .catch(() => {
         /* swipe é best-effort; uma falha de rede não interrompe a navegação */
@@ -76,24 +84,31 @@ export default function SwipePage() {
     });
   }
 
-  /**
-   * Pet recém-cadastrado vira o novo "meu pet" (origem). Mudar `myPet` dispara o
-   * recarregamento do feed recomendado para ele (o próprio pet não aparece nele).
-   */
+  /** Pet recém-cadastrado vira o novo "meu pet" (origem) e recarrega o feed. */
   function handleCreated(pet: Pet) {
     setMyPet(pet);
     setMyPetState({ id: pet.id, name: pet.name });
+    localStorage.setItem(ONBOARDED_KEY, '1');
     setShowRegister(false);
+  }
+
+  /** Fecha o cadastro (também conclui o onboarding). */
+  function closeRegister() {
+    localStorage.setItem(ONBOARDED_KEY, '1');
+    setShowRegister(false);
+  }
+
+  /** Abre o chat do match (ou a lista, se por algum motivo não veio o id). */
+  function goToChat() {
+    const id = match?.matchId;
+    setMatch(null);
+    navigate(id ? `/matches/${id}` : '/matches');
   }
 
   // Cadastro aberto: ocupa a tela; o feed recarrega ao voltar (origem nova).
   if (showRegister) {
     return (
-      <RegisterPetPage
-        isOnboarding={false}
-        onDone={handleCreated}
-        onCancel={() => setShowRegister(false)}
-      />
+      <RegisterPetPage isOnboarding={!myPet} onDone={handleCreated} onCancel={closeRegister} />
     );
   }
 
@@ -110,8 +125,29 @@ export default function SwipePage() {
           <i>Match</i>
         </div>
         <div className="header-actions">
-          <button className="btn-pill" onClick={() => setShowRegister(true)}>
-            + Cadastrar pet
+          <button
+            className="icon-btn"
+            onClick={() => setShowRegister(true)}
+            title="Cadastrar pet"
+            aria-label="Cadastrar pet"
+          >
+            ➕
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => navigate('/matches')}
+            title="Matches"
+            aria-label="Matches"
+          >
+            💬
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => navigate('/perfil')}
+            title="Perfil"
+            aria-label="Perfil"
+          >
+            👤
           </button>
           <button
             className="icon-btn"
@@ -186,7 +222,7 @@ export default function SwipePage() {
         canSwipe={canSwipe}
       />
 
-      <MatchModal pet={match} onKeep={() => setMatch(null)} onMessage={() => setMatch(null)} />
+      <MatchModal pet={match?.pet ?? null} onKeep={() => setMatch(null)} onMessage={goToChat} />
     </div>
   );
 }
