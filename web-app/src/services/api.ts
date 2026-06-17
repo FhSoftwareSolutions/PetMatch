@@ -52,6 +52,8 @@ export interface NewPet {
   mainPhotoUrl?: string;
   temperament?: string[];
   city?: string;
+  // GeoJSON [lng, lat] capturado do dispositivo (opcional; senão deriva da city).
+  location?: { type: 'Point'; coordinates: [number, number] };
 }
 
 /** Cabeçalhos de identidade: ownerId anônimo + Bearer quando logado. */

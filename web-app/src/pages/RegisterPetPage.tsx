@@ -31,6 +31,25 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
   const [bio, setBio] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Coordenadas GeoJSON [lng, lat] do dispositivo (opcional).
+  const [geo, setGeo] = useState<[number, number] | null>(null);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
+
+  /** Captura a localização do dispositivo (com permissão do usuário). */
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setGeoMsg('Geolocalização indisponível neste navegador.');
+      return;
+    }
+    setGeoMsg('Obtendo localização…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeo([pos.coords.longitude, pos.coords.latitude]);
+        setGeoMsg('Localização capturada ✓');
+      },
+      () => setGeoMsg('Não foi possível obter a localização.'),
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -83,6 +102,7 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
       ),
     ];
     if (temps.length) payload.temperament = temps;
+    if (geo) payload.location = { type: 'Point', coordinates: geo };
 
     setSubmitting(true);
     try {
@@ -214,6 +234,13 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
                 ))}
               </select>
             </label>
+          </div>
+
+          <div className="geo-row">
+            <button type="button" className="btn-ghost-dark" onClick={useMyLocation}>
+              📍 Usar minha localização
+            </button>
+            {geoMsg && <span className="geo-msg">{geoMsg}</span>}
           </div>
 
           <label className="field">
