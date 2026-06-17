@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { createPet, type NewPet, type Pet } from '../services/api';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { createPet, uploadPhoto, type NewPet, type Pet } from '../services/api';
 import { CITIES, GENDERS, SEEKINGS, SIZES, SPECIES } from '../lib/options';
 
 interface RegisterPetPageProps {
@@ -34,6 +34,24 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
   // Coordenadas GeoJSON [lng, lat] do dispositivo (opcional).
   const [geo, setGeo] = useState<[number, number] | null>(null);
   const [geoMsg, setGeoMsg] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  /** Faz upload do arquivo escolhido e usa a URL retornada como foto. */
+  async function onPickFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await uploadPhoto(file);
+      setPhoto(url);
+      setPhotoOk(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao enviar a foto.');
+    } finally {
+      setUploading(false);
+    }
+  }
 
   /** Captura a localização do dispositivo (com permissão do usuário). */
   function useMyLocation() {
@@ -255,15 +273,19 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
           </label>
 
           <label className="field">
-            <span>Foto (URL)</span>
+            <span>Foto</span>
             <input
               value={photo}
               onChange={(e) => {
                 setPhoto(e.target.value);
                 setPhotoOk(true);
               }}
-              placeholder="https://… (opcional)"
+              placeholder="https://… (cole uma URL ou envie um arquivo)"
             />
+            <div className="geo-row">
+              <input type="file" accept="image/*" onChange={onPickFile} disabled={uploading} />
+              {uploading && <span className="geo-msg">Enviando…</span>}
+            </div>
           </label>
 
           <label className="field">

@@ -7,6 +7,7 @@ import { UsersModule } from './modules/users/users.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { MatchesModule } from './modules/matches/matches.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { OptionalJwtAuthGuard } from './modules/auth/optional-jwt-auth.guard';
 
 @Module({
@@ -25,6 +26,7 @@ import { OptionalJwtAuthGuard } from './modules/auth/optional-jwt-auth.guard';
     PetsModule,
     MatchesModule,
     AuthModule,
+    UploadsModule,
   ],
   providers: [
     // Autenticação opcional em todas as rotas: popula req.user quando há JWT

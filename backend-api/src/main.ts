@@ -1,8 +1,11 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
+import { UPLOAD_DIR } from './modules/uploads/uploads.controller';
 
 /**
  * Ponto de entrada da API NestJS.
@@ -11,10 +14,13 @@ import { AppModule } from './app.module';
  * valida os DTOs e descarta campos extras, e a documentação Swagger em `/docs`.
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Libera o acesso dos frontends (web em :5173, app Expo, etc.).
   app.enableCors();
+
+  // Serve as imagens enviadas (uploads) de forma estática em /uploads.
+  app.useStaticAssets(join(process.cwd(), UPLOAD_DIR), { prefix: '/uploads/' });
 
   // Valida os DTOs com class-validator: whitelist remove campos não declarados,
   // forbidNonWhitelisted rejeita (400) quem envia campos desconhecidos/com typo,

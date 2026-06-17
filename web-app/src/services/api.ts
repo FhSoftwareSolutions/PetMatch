@@ -118,6 +118,21 @@ export async function createPet(input: NewPet): Promise<Pet> {
   return res.json();
 }
 
+/** Faz upload de uma imagem e devolve a URL pública para usar como foto. */
+export async function uploadPhoto(file: File): Promise<string> {
+  const form = new FormData();
+  form.append('file', file);
+  // Sem Content-Type manual: o browser define o boundary do multipart.
+  const res = await fetch(`${API_BASE_URL}/uploads`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: form,
+  });
+  if (!res.ok) throw new Error(`Não foi possível enviar a foto: ${await errorDetail(res)}`);
+  const data = await res.json();
+  return data.url as string;
+}
+
 /** Remove um pet do dono. */
 export async function deletePet(id: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/pets/${encodeURIComponent(id)}`, {
