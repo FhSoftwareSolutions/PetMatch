@@ -142,6 +142,35 @@ sobe apenas o MongoDB (para o fluxo `npm run dev`).
 
 ---
 
+## Como usar o app
+
+Com os serviços no ar (`npm run dev` + `npm run seed`, ou
+`docker compose --profile full up -d --build`):
+
+1. Abra o **web** em `http://localhost:5173`.
+2. **Onboarding**: na primeira visita, cadastre seu pet (nome, espécie, sexo,
+   idade, porte, objetivo e cidade). Ele vira a *origem* das recomendações.
+3. **Descobrir**: deslize os cards (arraste ou use os botões ❤ / ✕). O feed é
+   ordenado pelo motor de recomendação (proximidade + compatibilidade).
+4. **Match**: quando dois pets se curtem, abre a tela de match — siga para o
+   **chat**. Seus matches ficam em 💬 no cabeçalho (rota `/matches`).
+5. **Conta (opcional)**: em 👤 **Perfil** dá para criar conta / entrar, ver e
+   excluir seus pets e **enviar fotos** por upload (anônimo segue usando URL).
+
+> **Para ver um match de verdade** é preciso reciprocidade: use dois navegadores
+> (ou uma aba anônima), cadastre um pet em cada e curtam-se mutuamente. Os pets
+> do `seed` não curtem de volta sozinhos.
+
+**Mobile:** `cd mobile-app && npm start` e abra no Expo Go. Em dispositivo físico,
+aponte a API: `export EXPO_PUBLIC_API_BASE_URL=http://SEU_IP:3000`.
+
+**API:** documentação interativa (Swagger) em `http://localhost:3000/docs`.
+Principais rotas: `POST /auth/register|login`, `GET /pets`,
+`GET /pets/feed?petId=`, `POST /pets`, `POST /swipes`, `GET /matches`,
+`GET|POST /matches/:matchId/messages`, `POST /uploads`.
+
+---
+
 ## Status atual
 
 App **completo ponta a ponta** (web + mobile), com contrato unificado entre os
