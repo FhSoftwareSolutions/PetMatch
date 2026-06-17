@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { APP_GUARD } from '@nestjs/core';
 
 import { UsersModule } from './modules/users/users.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { MatchesModule } from './modules/matches/matches.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { OptionalJwtAuthGuard } from './modules/auth/optional-jwt-auth.guard';
 
 @Module({
   imports: [
@@ -18,6 +21,12 @@ import { MatchesModule } from './modules/matches/matches.module';
     UsersModule,
     PetsModule,
     MatchesModule,
+    AuthModule,
+  ],
+  providers: [
+    // Autenticação opcional em todas as rotas: popula req.user quando há JWT
+    // válido, sem bloquear o fluxo anônimo (X-Owner-Id).
+    { provide: APP_GUARD, useClass: OptionalJwtAuthGuard },
   ],
 })
 export class AppModule {}

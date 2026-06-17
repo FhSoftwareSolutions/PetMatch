@@ -36,7 +36,20 @@ export class UserProfile {
  * `timestamps: true` cria e mantém `createdAt`/`updatedAt` automaticamente —
  * por isso eles não são declarados como @Prop aqui.
  */
-@Schema({ collection: 'users', timestamps: true })
+@Schema({
+  collection: 'users',
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (_doc, ret: Record<string, any>) => {
+      ret.id = ret._id?.toString?.() ?? ret._id;
+      delete ret._id;
+      delete ret.passwordHash; // nunca expor o hash da senha
+      return ret;
+    },
+  },
+})
 export class User {
   @Prop({ required: true })
   name!: string;
