@@ -4,8 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PetsController } from './pets.controller';
 import { PetsService } from './pets.service';
 import { Pet, PetSchema } from './schemas/pet.schema';
-import { PetsService } from './pets.service';
-import { PetsController } from './pets.controller';
 import { MatchesModule } from '../matches/matches.module';
 
 /**
