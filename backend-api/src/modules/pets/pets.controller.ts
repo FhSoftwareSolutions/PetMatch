@@ -36,6 +36,12 @@ export class PetsController {
     return this.petsService.getFeed(petId, limit ? parseInt(limit, 10) : undefined);
   }
 
+  /** GET /pets/mine — pets do dono (declarada antes de `:id`). */
+  @Get('mine')
+  findMine(@OwnerId() ownerId: Types.ObjectId) {
+    return this.petsService.findMine(ownerId);
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createPetDto: CreatePetDto, @OwnerId() ownerId: Types.ObjectId) {

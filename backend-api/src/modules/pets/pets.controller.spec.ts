@@ -14,6 +14,7 @@ describe('PetsController', () => {
   const mockPetsService = {
     create: jest.fn().mockResolvedValue(mockPetResult),
     findAllAvailable: jest.fn().mockResolvedValue([mockPetResult]),
+    findMine: jest.fn().mockResolvedValue([mockPetResult]),
     getFeed: jest.fn().mockResolvedValue([mockPetResult]),
     findOne: jest.fn().mockResolvedValue(mockPetResult),
     update: jest.fn().mockResolvedValue(mockPetResult),
@@ -48,6 +49,14 @@ describe('PetsController', () => {
     it('encaminha petId e limit (parseado) para o service', async () => {
       const result = await controller.getFeed('pet-1', '10');
       expect(service.getFeed).toHaveBeenCalledWith('pet-1', 10);
+      expect(result).toEqual([mockPetResult]);
+    });
+  });
+
+  describe('findMine', () => {
+    it('lista os pets do dono', async () => {
+      const result = await controller.findMine(ownerId);
+      expect(service.findMine).toHaveBeenCalledWith(ownerId);
       expect(result).toEqual([mockPetResult]);
     });
   });

@@ -49,6 +49,11 @@ export class PetsService {
       .exec();
   }
 
+  /** Lista os pets do dono (autenticado ou identificado por X-Owner-Id). */
+  async findMine(ownerId: Types.ObjectId): Promise<PetDocument[]> {
+    return this.petModel.find({ ownerId }).sort({ createdAt: -1 }).exec();
+  }
+
   async findOne(id: string): Promise<PetDocument> {
     this.assertObjectId(id);
     const pet = await this.petModel.findById(id).exec();
