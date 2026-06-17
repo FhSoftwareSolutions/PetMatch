@@ -44,6 +44,7 @@ function build(p: SeedPetInput) {
     photos: [p.mainPhotoUrl],
     compatibility: p.compatibility ?? {},
     recommendationTags: p.recommendationTags ?? [],
+    city: p.city,
     location: { type: 'Point', coordinates: coordsForCity(p.city) },
     active: true,
     status: 'available',
