@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import mongoose from 'mongoose';
+
 import { PetsController } from './pets.controller';
 import { PetsService } from './pets.service';
 
@@ -6,50 +8,70 @@ describe('PetsController', () => {
   let controller: PetsController;
   let service: PetsService;
 
-  const mockPetResult = {
-    id: 'mock-pet-id',
-    name: 'Rex',
-    species: 'Cachorro',
-  };
+  const mockPetResult = { id: 'mock-pet-id', name: 'Rex', species: 'Cão' };
+  const ownerId = new mongoose.Types.ObjectId();
 
   const mockPetsService = {
     create: jest.fn().mockResolvedValue(mockPetResult),
+    findAllAvailable: jest.fn().mockResolvedValue([mockPetResult]),
+    findMine: jest.fn().mockResolvedValue([mockPetResult]),
+    getFeed: jest.fn().mockResolvedValue([mockPetResult]),
     findOne: jest.fn().mockResolvedValue(mockPetResult),
     update: jest.fn().mockResolvedValue(mockPetResult),
     remove: jest.fn().mockResolvedValue(mockPetResult),
-    getDiscoveryFeed: jest.fn().mockResolvedValue([mockPetResult]),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PetsController],
-      providers: [
-        {
-          provide: PetsService,
-          useValue: mockPetsService,
-        },
-      ],
+      providers: [{ provide: PetsService, useValue: mockPetsService }],
     }).compile();
 
     controller = module.get<PetsController>(PetsController);
     service = module.get<PetsService>(PetsService);
   });
 
+  afterEach(() => jest.clearAllMocks());
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('findAll', () => {
+    it('lista pets disponíveis', async () => {
+      const result = await controller.findAll();
+      expect(service.findAllAvailable).toHaveBeenCalledWith(undefined);
+      expect(result).toEqual([mockPetResult]);
+    });
+  });
+
+  describe('getFeed', () => {
+    it('encaminha petId e limit (parseado) para o service', async () => {
+      const result = await controller.getFeed('pet-1', '10');
+      expect(service.getFeed).toHaveBeenCalledWith('pet-1', 10);
+      expect(result).toEqual([mockPetResult]);
+    });
+  });
+
+  describe('findMine', () => {
+    it('lista os pets do dono', async () => {
+      const result = await controller.findMine(ownerId);
+      expect(service.findMine).toHaveBeenCalledWith(ownerId);
+      expect(result).toEqual([mockPetResult]);
+    });
+  });
+
   describe('create', () => {
-    it('should call service.create with DTO', async () => {
+    it('chama service.create com o DTO e o ownerId do header', async () => {
       const dto = { name: 'Rex' } as any;
-      const result = await controller.create(dto);
-      expect(service.create).toHaveBeenCalledWith(dto);
+      const result = await controller.create(dto, ownerId);
+      expect(service.create).toHaveBeenCalledWith(dto, ownerId);
       expect(result).toEqual(mockPetResult);
     });
   });
 
   describe('findOne', () => {
-    it('should call service.findOne with id', async () => {
+    it('chama service.findOne com o id', async () => {
       const result = await controller.findOne('id');
       expect(service.findOne).toHaveBeenCalledWith('id');
       expect(result).toEqual(mockPetResult);
@@ -57,38 +79,19 @@ describe('PetsController', () => {
   });
 
   describe('update', () => {
-    it('should call service.update with id and DTO', async () => {
+    it('chama service.update com id, DTO e ownerId', async () => {
       const dto = { name: 'Rex' } as any;
-      const result = await controller.update('id', dto);
-      expect(service.update).toHaveBeenCalledWith('id', dto);
+      const result = await controller.update('id', dto, ownerId);
+      expect(service.update).toHaveBeenCalledWith('id', dto, ownerId);
       expect(result).toEqual(mockPetResult);
     });
   });
 
   describe('remove', () => {
-    it('should call service.remove with id', async () => {
-      const result = await controller.remove('id');
-      expect(service.remove).toHaveBeenCalledWith('id');
+    it('chama service.remove com id e ownerId', async () => {
+      const result = await controller.remove('id', ownerId);
+      expect(service.remove).toHaveBeenCalledWith('id', ownerId);
       expect(result).toEqual(mockPetResult);
-    });
-  });
-
-  describe('getDiscoveryFeed', () => {
-    it('should call service.getDiscoveryFeed with parsed parameters', async () => {
-      const result = await controller.getDiscoveryFeed(
-        'id',
-        'Cachorro',
-        '25',
-        '10',
-        '2',
-      );
-      expect(service.getDiscoveryFeed).toHaveBeenCalledWith('id', {
-        species: 'Cachorro',
-        maxDistanceKm: 25,
-        limit: 10,
-        page: 2,
-      });
-      expect(result).toEqual([mockPetResult]);
     });
   });
 });

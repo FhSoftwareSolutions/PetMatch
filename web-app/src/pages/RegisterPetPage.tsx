@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
-import { createPet, type NewPet, type Pet } from '../services/api';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { createPet, uploadPhoto, type NewPet, type Pet } from '../services/api';
 import { CITIES, GENDERS, SEEKINGS, SIZES, SPECIES } from '../lib/options';
+import { isLoggedIn } from '../lib/session';
 
 interface RegisterPetPageProps {
   /** Quando true, é o cadastro inicial (mostra boas-vindas e "pular"). */
@@ -31,6 +32,43 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
   const [bio, setBio] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Coordenadas GeoJSON [lng, lat] do dispositivo (opcional).
+  const [geo, setGeo] = useState<[number, number] | null>(null);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  /** Faz upload do arquivo escolhido e usa a URL retornada como foto. */
+  async function onPickFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await uploadPhoto(file);
+      setPhoto(url);
+      setPhotoOk(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao enviar a foto.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  /** Captura a localização do dispositivo (com permissão do usuário). */
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setGeoMsg('Geolocalização indisponível neste navegador.');
+      return;
+    }
+    setGeoMsg('Obtendo localização…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeo([pos.coords.longitude, pos.coords.latitude]);
+        setGeoMsg('Localização capturada ✓');
+      },
+      () => setGeoMsg('Não foi possível obter a localização.'),
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -83,6 +121,7 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
       ),
     ];
     if (temps.length) payload.temperament = temps;
+    if (geo) payload.location = { type: 'Point', coordinates: geo };
 
     setSubmitting(true);
     try {
@@ -216,6 +255,13 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
             </label>
           </div>
 
+          <div className="geo-row">
+            <button type="button" className="btn-ghost-dark" onClick={useMyLocation}>
+              📍 Usar minha localização
+            </button>
+            {geoMsg && <span className="geo-msg">{geoMsg}</span>}
+          </div>
+
           <label className="field">
             <span>Procura por*</span>
             <select value={seeking} onChange={(e) => setSeeking(e.target.value)}>
@@ -228,15 +274,23 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
           </label>
 
           <label className="field">
-            <span>Foto (URL)</span>
+            <span>Foto</span>
             <input
               value={photo}
               onChange={(e) => {
                 setPhoto(e.target.value);
                 setPhotoOk(true);
               }}
-              placeholder="https://… (opcional)"
+              placeholder="https://… (cole uma URL ou envie um arquivo)"
             />
+            {isLoggedIn() ? (
+              <div className="geo-row">
+                <input type="file" accept="image/*" onChange={onPickFile} disabled={uploading} />
+                {uploading && <span className="geo-msg">Enviando…</span>}
+              </div>
+            ) : (
+              <span className="auth-hint">Entre na sua conta para enviar arquivos (ou cole uma URL acima).</span>
+            )}
           </label>
 
           <label className="field">

@@ -1,6 +1,20 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, IsArray, IsBoolean, IsObject, ValidateNested, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  IsArray,
+  IsUrl,
+  IsObject,
+  ArrayMinSize,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
+/** Localização em GeoJSON Point; opcional no cadastro (deriva da cidade). */
 export class PetLocationDto {
   @IsString()
   @IsNotEmpty()
@@ -12,11 +26,12 @@ export class PetLocationDto {
   coordinates!: number[];
 }
 
+/**
+ * Campos aceitos em `POST /pets`. O `ownerId` NÃO vem no corpo: é resolvido do
+ * header `X-Owner-Id` (decorator @OwnerId). A `location` também é opcional —
+ * quando ausente, o service a deriva da `city`.
+ */
 export class CreatePetDto {
-  @IsString()
-  @IsNotEmpty()
-  ownerId!: string;
-
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -29,61 +44,49 @@ export class CreatePetDto {
   @IsOptional()
   breed?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsEnum(['Macho', 'Fêmea'])
+  @IsEnum(['macho', 'femea'])
   gender!: string;
 
-  @IsDateString()
-  @IsNotEmpty()
-  birthDate!: string;
+  // transform:true (ValidationPipe) converte "24" -> 24 vindo do JSON/query.
+  @IsInt()
+  @Min(0)
+  @Max(600)
+  ageMonths!: number;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsEnum(['Pequeno', 'Médio', 'Grande'])
+  @IsEnum(['pequeno', 'medio', 'grande'])
   size!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsEnum(['Socialização', 'Cruzamento'])
-  purpose!: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  photos?: string[];
-
-  @IsString()
-  @IsOptional()
-  mainPhotoUrl?: string;
+  @IsEnum(['socializacao', 'cruzamento', 'ambos'])
+  seeking!: string;
 
   @IsString()
   @IsOptional()
   bio?: string;
 
-  @IsObject()
+  @IsUrl()
   @IsOptional()
-  characteristics?: Record<string, any>;
+  mainPhotoUrl?: string;
 
   @IsString()
-  @IsNotEmpty()
-  @IsEnum(['Baixa', 'Média', 'Alta'])
-  energyLevel!: string;
-
-  @IsBoolean()
   @IsOptional()
-  sociableWithOtherPets?: boolean;
+  city?: string;
 
-  @IsBoolean()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  castrated?: boolean;
+  temperament?: string[];
 
-  @IsBoolean()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  vaccinesUpToDate?: boolean;
+  recommendationTags?: string[];
+
+  @IsObject()
+  @IsOptional()
+  compatibility?: Record<string, any>;
 
   @ValidateNested()
   @Type(() => PetLocationDto)
-  @IsNotEmpty()
-  location!: PetLocationDto;
+  @IsOptional()
+  location?: PetLocationDto;
 }

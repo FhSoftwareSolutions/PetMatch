@@ -226,6 +226,10 @@ def rank_candidates(
                 "size": candidate.get("size"),
                 "seeking": candidate.get("seeking"),
                 "main_photo_url": candidate.get("mainPhotoUrl"),
+                "bio": candidate.get("bio"),
+                "city": candidate.get("city"),
+                "temperament": candidate.get("temperament") or [],
+                "recommendation_tags": candidate.get("recommendationTags") or [],
             }
         )
 

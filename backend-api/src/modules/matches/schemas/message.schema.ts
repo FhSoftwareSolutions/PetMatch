@@ -20,7 +20,19 @@ export class MessageAttachment {
  * `timestamps: true` gerencia `createdAt`/`updatedAt` (usados para ordenar a
  * conversa e listar não lidas).
  */
-@Schema({ collection: 'messages', timestamps: true })
+@Schema({
+  collection: 'messages',
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (_doc, ret: Record<string, any>) => {
+      ret.id = ret._id?.toString?.() ?? ret._id;
+      delete ret._id;
+      return ret;
+    },
+  },
+})
 export class Message {
   // Match (conversa) ao qual a mensagem pertence.
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Match', required: true })

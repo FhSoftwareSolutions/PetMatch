@@ -1,37 +1,42 @@
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+
 import SwipePage from './pages/SwipePage';
+import MatchesPage from './pages/MatchesPage';
+import ChatPage from './pages/ChatPage';
+import ProfilePage from './pages/ProfilePage';
+import LoginPage from './pages/LoginPage';
+import RegisterAccountPage from './pages/RegisterAccountPage';
 import RegisterPetPage from './pages/RegisterPetPage';
 import { setMyPet } from './lib/session';
 import type { Pet } from './services/api';
 
-// Marca, no navegador, que o usuário já passou pelo cadastro inicial.
-const ONBOARDED_KEY = 'petmatch_onboarded';
-
-/**
- * Componente raiz do app web.
- *
- * Na primeira visita abre o cadastro de pet em tela cheia (onboarding); o pet
- * cadastrado vira a origem das recomendações. Depois vai direto para o feed de
- * swipe, onde o cadastro reabre como overlay.
- */
-export default function App() {
-  const [onboarded, setOnboarded] = useState(() => Boolean(localStorage.getItem(ONBOARDED_KEY)));
-
-  /** Marca o onboarding como concluído (cadastrou ou pulou). */
-  function finish() {
-    localStorage.setItem(ONBOARDED_KEY, '1');
-    setOnboarded(true);
-  }
-
-  /** Cadastrou no onboarding: guarda o pet como origem e segue para o feed. */
+/** Rota de cadastro de pet (reusa o formulário do onboarding). */
+function NewPetRoute() {
+  const navigate = useNavigate();
   function handleDone(pet: Pet) {
     setMyPet(pet);
-    finish();
+    navigate('/');
   }
+  return <RegisterPetPage isOnboarding={false} onDone={handleDone} onCancel={() => navigate(-1)} />;
+}
 
-  if (!onboarded) {
-    return <RegisterPetPage isOnboarding onDone={handleDone} onCancel={finish} />;
-  }
-
-  return <SwipePage />;
+/**
+ * Raiz do app web. Roteamento por react-router: feed de swipe, matches, chat,
+ * perfil e telas de conta. O onboarding (1º cadastro de pet) vive no SwipePage.
+ */
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<SwipePage />} />
+        <Route path="/matches" element={<MatchesPage />} />
+        <Route path="/matches/:id" element={<ChatPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/cadastro" element={<RegisterAccountPage />} />
+        <Route path="/pets/novo" element={<NewPetRoute />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }

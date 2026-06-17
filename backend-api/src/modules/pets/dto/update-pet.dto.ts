@@ -1,7 +1,20 @@
-import { IsString, IsOptional, IsEnum, IsDateString, IsArray, IsBoolean, IsObject, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  IsArray,
+  IsUrl,
+  IsObject,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { PetLocationDto } from './create-pet.dto';
 
+/** Campos editáveis de um pet (todos opcionais). Espelha o CreatePetDto. */
 export class UpdatePetDto {
   @IsString()
   @IsOptional()
@@ -15,58 +28,49 @@ export class UpdatePetDto {
   @IsOptional()
   breed?: string;
 
-  @IsString()
+  @IsEnum(['macho', 'femea'])
   @IsOptional()
-  @IsEnum(['Macho', 'Fêmea'])
   gender?: string;
 
-  @IsDateString()
+  @IsInt()
+  @Min(0)
+  @Max(600)
   @IsOptional()
-  birthDate?: string;
+  ageMonths?: number;
 
-  @IsString()
+  @IsEnum(['pequeno', 'medio', 'grande'])
   @IsOptional()
-  @IsEnum(['Pequeno', 'Médio', 'Grande'])
   size?: string;
 
-  @IsString()
+  @IsEnum(['socializacao', 'cruzamento', 'ambos'])
   @IsOptional()
-  @IsEnum(['Socialização', 'Cruzamento'])
-  purpose?: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  photos?: string[];
-
-  @IsString()
-  @IsOptional()
-  mainPhotoUrl?: string;
+  seeking?: string;
 
   @IsString()
   @IsOptional()
   bio?: string;
 
-  @IsObject()
+  @IsUrl()
   @IsOptional()
-  characteristics?: Record<string, any>;
+  mainPhotoUrl?: string;
 
   @IsString()
   @IsOptional()
-  @IsEnum(['Baixa', 'Média', 'Alta'])
-  energyLevel?: string;
+  city?: string;
 
-  @IsBoolean()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  sociableWithOtherPets?: boolean;
+  temperament?: string[];
 
-  @IsBoolean()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  castrated?: boolean;
+  recommendationTags?: string[];
 
-  @IsBoolean()
+  @IsObject()
   @IsOptional()
-  vaccinesUpToDate?: boolean;
+  compatibility?: Record<string, any>;
 
   @ValidateNested()
   @Type(() => PetLocationDto)
@@ -75,5 +79,9 @@ export class UpdatePetDto {
 
   @IsBoolean()
   @IsOptional()
-  isActive?: boolean;
+  active?: boolean;
+
+  @IsEnum(['available', 'hidden', 'adopted'])
+  @IsOptional()
+  status?: string;
 }

@@ -34,3 +34,18 @@ export const SEED_OWNER_IDS = [
  * deixando a ordenação ser definida principalmente pela similaridade de conteúdo.
  */
 export const FEED_RADIUS_KM = 10000;
+
+/** Quantidade padrão de itens retornados pelo feed. */
+export const FEED_DEFAULT_LIMIT = 20;
+
+/**
+ * Compatibilidade de objetivo: o que um pet com dado `seeking` aceita ver.
+ *
+ * Espelha o `SEEKING_COMPAT` do recommendation-engine e é usado apenas no modo
+ * degradado do feed (quando o motor está indisponível e caímos no Mongo direto).
+ */
+export const SEEKING_COMPAT: Record<string, string[]> = {
+  cruzamento: ['cruzamento', 'ambos'],
+  socializacao: ['socializacao', 'ambos'],
+  ambos: ['cruzamento', 'socializacao', 'ambos'],
+};

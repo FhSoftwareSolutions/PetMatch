@@ -66,8 +66,26 @@ export class MatchSummary {
  *
  * `timestamps: true` gerencia `createdAt`/`updatedAt` automaticamente.
  */
-@Schema({ collection: 'matches', timestamps: true })
+@Schema({
+  collection: 'matches',
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (_doc, ret: Record<string, any>) => {
+      ret.id = ret._id?.toString?.() ?? ret._id;
+      delete ret._id;
+      return ret;
+    },
+  },
+})
 export class Match {
+  // Chave canônica do par (ids dos pets ordenados e unidos por "_"). Garante,
+  // via índice único, no máximo UM match por par de pets — sem o efeito colateral
+  // do índice multikey em `petIds` (que limitaria um pet a um único match).
+  @Prop({ required: true, unique: true })
+  pairKey!: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Pet', required: true })
   petAId!: mongoose.Types.ObjectId;
 
@@ -117,11 +135,12 @@ export class Match {
 export const MatchSchema = SchemaFactory.createForClass(Match);
 
 // Índices.
-// - petIds único: impede matches duplicados e é o caminho canônico de busca.
+// - pairKey único (criado pelo @Prop unique): no máximo um match por par de pets.
+// - petIds (multikey, NÃO único): "todos os matches de um pet".
 // - ownerIds: lista os matches de um dono.
 // - petAId/petBId: acesso direto por lado específico do par.
 // - lastMessageAt: ordena as conversas da mais recente para a mais antiga.
-MatchSchema.index({ petIds: 1 }, { unique: true });
+MatchSchema.index({ petIds: 1 });
 MatchSchema.index({ ownerIds: 1 });
 MatchSchema.index({ petAId: 1 });
 MatchSchema.index({ petBId: 1 });

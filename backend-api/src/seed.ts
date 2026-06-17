@@ -27,7 +27,6 @@ async function run() {
     const removed = await petModel.deleteMany({ 'metadata.seed': true });
     const inserted = await petModel.insertMany(SEED_PETS);
 
-    // eslint-disable-next-line no-console
     console.log(`🌱 Seed concluído: ${removed.deletedCount} removidos, ${inserted.length} inseridos.`);
   } finally {
     await app.close();
@@ -35,7 +34,7 @@ async function run() {
 }
 
 run().catch((err) => {
-  // eslint-disable-next-line no-console
+   
   console.error('Falha no seed:', err);
   process.exit(1);
 });

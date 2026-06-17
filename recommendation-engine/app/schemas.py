@@ -71,6 +71,10 @@ class Candidate(CamelModel):
     size: Optional[str] = None
     seeking: Optional[str] = None
     main_photo_url: Optional[str] = None
+    bio: Optional[str] = None
+    city: Optional[str] = None
+    temperament: list[str] = Field(default_factory=list)
+    recommendation_tags: list[str] = Field(default_factory=list)
 
 
 class RecommendationResponse(CamelModel):

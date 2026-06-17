@@ -2,10 +2,12 @@
 
 **"Tinder para Pets"** — um aplicativo que conecta donos de pets para **cruzamento** ou **socialização (brincadeiras)**, usando um sistema de recomendação baseado em **geolocalização** e **filtragem de conteúdo**.
 
-> **Observação:** o projeto está em construção. O **motor de recomendação** já
-> tem o pipeline (geo + conteúdo) implementado e testado, e o **frontend web**
-> já roda a tela de swipe com dados mock. O **backend-api** (modelagem do banco)
-> e o **app mobile** ainda são andaimes (scaffolding) — sem lógica de negócio.
+> **Observação:** o projeto já funciona ponta a ponta na web. O **backend-api**
+> (NestJS) expõe o CRUD de pets, o feed e os swipes; o **motor de recomendação**
+> (geo + conteúdo) ordena o feed; e o **frontend web** consome a API real
+> (cadastro, swipe e match recíproco). O **app mobile** ainda é um andaime
+> (scaffolding). Autenticação, persistência de match/chat e o app mobile são os
+> próximos passos.
 
 ---
 
@@ -78,7 +80,14 @@ npm run start:dev
 ```
 
 A API sobe em `http://localhost:3000`.
-Variável opcional: `MONGO_URI` (padrão `mongodb://localhost:27017/petmatch`).
+Variáveis opcionais: `MONGO_URI` (padrão `mongodb://127.0.0.1:27017/petmatch`) e
+`AI_ENGINE_URL` (padrão `http://127.0.0.1:8000`, usado pelo feed).
+
+Popular o banco com pets de exemplo (precisa do MongoDB no ar):
+
+```bash
+npm run seed
+```
 
 ### 2. Motor de Recomendação (FastAPI)
 
@@ -99,10 +108,13 @@ Verifique o status acessando `http://localhost:8000/` → `{"status": "PetMatch 
 ```bash
 cd mobile-app
 npm install
+# Para testar em um dispositivo físico, aponte a API para o IP da sua máquina:
+# export EXPO_PUBLIC_API_BASE_URL=http://SEU_IP:3000
 npm start
 ```
 
 Use o **Expo Go** no celular (escaneando o QR Code) ou um emulador Android/iOS.
+O app tem navegação (abas + stack), login, feed/swipe, matches, chat e perfil.
 
 ### 4. Frontend Web (React + Vite)
 
@@ -114,54 +126,89 @@ npm run dev
 ```
 
 A aplicação web sobe em `http://localhost:5173` com a tela de **swipe** (deck de
-pets com dados mock). Detalhes em [`web-app/README.md`](web-app/README.md).
+pets vindos da API/feed). Detalhes em [`web-app/README.md`](web-app/README.md).
+
+### 5. Tudo em containers (opcional)
+
+Para subir a stack completa (Mongo + motor + API + web) só com Docker:
+
+```bash
+docker compose --profile full up -d --build
+```
+
+Web em `http://localhost:5173`, API em `http://localhost:3000` (Swagger em
+`/docs`) e motor em `http://localhost:8000`. Sem o profile, `docker compose up -d`
+sobe apenas o MongoDB (para o fluxo `npm run dev`).
 
 ---
 
+## Como usar o app
+
+Com os serviços no ar (`npm run dev` + `npm run seed`, ou
+`docker compose --profile full up -d --build`):
+
+1. Abra o **web** em `http://localhost:5173`.
+2. **Onboarding**: na primeira visita, cadastre seu pet (nome, espécie, sexo,
+   idade, porte, objetivo e cidade). Ele vira a *origem* das recomendações.
+3. **Descobrir**: deslize os cards (arraste ou use os botões ❤ / ✕). O feed é
+   ordenado pelo motor de recomendação (proximidade + compatibilidade).
+4. **Match**: quando dois pets se curtem, abre a tela de match — siga para o
+   **chat**. Seus matches ficam em 💬 no cabeçalho (rota `/matches`).
+5. **Conta (opcional)**: em 👤 **Perfil** dá para criar conta / entrar, ver e
+   excluir seus pets e **enviar fotos** por upload (anônimo segue usando URL).
+
+> **Para ver um match de verdade** é preciso reciprocidade: use dois navegadores
+> (ou uma aba anônima), cadastre um pet em cada e curtam-se mutuamente. Os pets
+> do `seed` não curtem de volta sozinhos.
+
+**Mobile:** `cd mobile-app && npm start` e abra no Expo Go. Em dispositivo físico,
+aponte a API: `export EXPO_PUBLIC_API_BASE_URL=http://SEU_IP:3000`.
+
+**API:** documentação interativa (Swagger) em `http://localhost:3000/docs`.
+Principais rotas: `POST /auth/register|login`, `GET /pets`,
+`GET /pets/feed?petId=`, `POST /pets`, `POST /swipes`, `GET /matches`,
+`GET|POST /matches/:matchId/messages`, `POST /uploads`.
+
+---
+
+## Status atual
+
+App **completo ponta a ponta** (web + mobile), com contrato unificado entre os
+serviços (`gender`/`size`/`seeking` minúsculos, `ageMonths`, `location` GeoJSON).
+
+**Backend (NestJS)**
+- CRUD de pets com DTOs + `ValidationPipe`; índices `2dsphere`.
+- `GET /pets` (lista), `GET /pets/mine` (do dono) e `GET /pets/feed?petId=`
+  (delega ao motor de recomendação, com fallback no Mongo se ele cair).
+- `POST /swipes` com persistência e **match recíproco** real (cria o `Match`).
+- **Autorização de escrita**: editar/excluir pet exige ser o dono (`@OwnerId`);
+  `POST /uploads` exige login. Leitura do feed/pets segue pública.
+- `GET /matches` e chat (`GET`/`POST /matches/:matchId/messages`).
+- **Autenticação JWT** (`/auth/register`, `/auth/login`, `/users/me`, bcrypt);
+  a identidade anônima por `X-Owner-Id` segue funcionando para quem não loga.
+- **Upload de imagens** (`POST /uploads`, servidas em `/uploads`).
+- **Swagger** em `/docs` e configuração via `.env` (`ConfigModule`).
+
+**Motor de recomendação (FastAPI)** — recall geográfico (`$geoNear`) + ranking de
+conteúdo (scikit-learn); contratos Pydantic em camelCase.
+
+**Frontend web (React + Vite)** — roteamento, onboarding, cadastro de pet (com
+foto por **upload** e **geolocalização**), feed recomendado, swipe, match, lista
+de **matches**, **chat**, **perfil** (conta + meus pets) e telas de login/cadastro.
+
+**App mobile (Expo + React Native)** — navegação (abas + stack), sessão em
+AsyncStorage e telas de descoberta, matches, chat, perfil e cadastros.
+
+**Qualidade** — testes (Jest no backend, Pytest no motor, Vitest no web), lint
+(ESLint no Node, Ruff/Black no Python), **CI** por serviço e **Dockerfiles** +
+`docker compose --profile full`.
+
 ## Próximos passos
 
-Roteiro de implementação sugerido, mapeado na stack atual. Cada item parte do andaime já existente.
-
-### Infraestrutura e Banco de Dados (MongoDB)
-
-- Criar arquivos `.env` por serviço (connection string, portas, segredos) e um `.env.example` versionado.
-- Definir o índice geoespacial `2dsphere` na coleção de pets para habilitar busca por proximidade (`$near` / `$geoWithin`).
-- (Opcional) Adicionar serviço de cache (Redis) ao `docker-compose.yml` para o feed de recomendações.
-
-### Backend API (NestJS + Mongoose)
-
-- Modelar os **Schemas Mongoose**: `User`, `Pet` (com campo `location` do tipo GeoJSON `Point`) e `Match`.
-- Registrar os schemas nos módulos via `MongooseModule.forFeature(...)`.
-- Implementar **DTOs + validação** com `class-validator` / `class-transformer` (`ValidationPipe` global).
-- Criar os **controllers e services** com o CRUD de cada módulo (users, pets, matches).
-- Adicionar **autenticação** (JWT via `@nestjs/passport` + `@nestjs/jwt`).
-- Expor um endpoint de **feed/descoberta** que consome o `recommendation-engine`.
-- Configurar `ConfigModule` (`@nestjs/config`), CORS e documentação Swagger (`@nestjs/swagger`).
-
-### Motor de Recomendação (FastAPI + scikit-learn)
-
-- Conectar ao MongoDB via `pymongo` (ler perfis de pets e interações).
-- Criar o endpoint `POST /recommendations` que recebe um pet + localização e retorna candidatos ordenados.
-- Implementar a **filtragem por geolocalização** (raio de busca) combinada com **filtragem de conteúdo** (similaridade por features: espécie, raça, porte, temperamento) usando `scikit-learn`.
-- Definir os contratos (schemas Pydantic) de request/response compartilhados com o backend.
-
-### App Mobile (React Native + Expo)
-
-- Adicionar **navegação** (`expo-router` ou `@react-navigation`).
-- Implementar as telas em `src/screens`: Login/Cadastro, Swipe/Match, Perfil do Pet, Lista de Matches, Chat.
-- Criar os **componentes** reutilizáveis em `src/components` (card de pet, botões de like/dislike, gesto de swipe).
-- Implementar a **camada de serviços** em `src/services` (cliente HTTP, ex.: `axios`, consumindo `API_BASE_URL`).
-- Adicionar gerenciamento de estado/sessão e permissão de **geolocalização** do dispositivo.
-
-### Frontend Web (React + Vite)
-
-- A tela de **swipe** (deck, histórico, match) já existe em `src/pages` e `src/components`, hoje com dados mock (`src/data/pets.ts`).
-- Consumir pets reais da API NestJS / motor de recomendação pela **camada de serviços** (`src/services/api.ts`), no lugar do mock.
-- Adicionar **roteamento** (`react-router-dom`) e novas telas (login, perfil, lista de matches, chat).
-
-### Transversais
-
-- Rodar as instalações de dependências (`npm install` / `pip install`) em cada serviço.
-- Configurar **lint e formatação** (ESLint + Prettier no Node; Ruff/Black no Python).
-- Adicionar **testes** (Jest no NestJS, Pytest no engine, Testing Library no front).
-- Configurar **CI** (lint + testes + build) e, futuramente, Dockerfiles por serviço para deploy.
+- **Tempo real no chat** (WebSocket/SSE) e **push notifications** de match/mensagem.
+- **Armazenamento de imagens** externo (ex.: S3/GCS) no lugar do disco local.
+- Vincular pets criados de forma anônima à conta após o login.
+- Cache (Redis) para o feed e paginação infinita no deck.
+- Observabilidade (logs estruturados, métricas) e pipeline de deploy.
+- Segurança: `npm audit` aponta 1 item moderado transitivo (`js-yaml` via
+  `@nestjs/swagger`), sem correção não-quebrante por ora e sem exposição prática.

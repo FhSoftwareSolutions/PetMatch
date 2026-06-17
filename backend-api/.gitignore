@@ -10,3 +10,6 @@ dist/
 # Logs
 *.log
 npm-debug.log*
+
+# Uploads (imagens enviadas em tempo de execução) — só a pasta na raiz do serviço
+/uploads/

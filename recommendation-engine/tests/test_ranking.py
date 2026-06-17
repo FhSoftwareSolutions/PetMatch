@@ -116,6 +116,24 @@ def test_score_dentro_de_zero_e_um():
     assert 0.0 <= ranked[0]["score"] <= 1.0
 
 
+def test_ranking_inclui_campos_de_exibicao():
+    origin = _pet()
+    cand = _pet(
+        _id="c",
+        bio="late pouco",
+        city="São Paulo",
+        temperament=["docil"],
+        recommendationTags=["vacinado"],
+        distanceMeters=1000.0,
+    )
+    ranked = rank_candidates(origin, [cand], mode="socializacao", radius_km=25, limit=10, **WEIGHTS)
+    item = ranked[0]
+    assert item["bio"] == "late pouco"
+    assert item["city"] == "São Paulo"
+    assert item["temperament"] == ["docil"]
+    assert item["recommendation_tags"] == ["vacinado"]
+
+
 def test_reasons_de_cruzamento_explicam_compatibilidade():
     origin = _pet(seeking="cruzamento", breed="labrador", gender="macho")
     cand = _pet(_id="c", breed="labrador", gender="femea", distanceMeters=1200.0)
