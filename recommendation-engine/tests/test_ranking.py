@@ -126,9 +126,7 @@ def test_ranking_inclui_campos_de_exibicao():
         recommendationTags=["vacinado"],
         distanceMeters=1000.0,
     )
-    ranked = rank_candidates(
-        origin, [cand], mode="socializacao", radius_km=25, limit=10, **WEIGHTS
-    )
+    ranked = rank_candidates(origin, [cand], mode="socializacao", radius_km=25, limit=10, **WEIGHTS)
     item = ranked[0]
     assert item["bio"] == "late pouco"
     assert item["city"] == "São Paulo"

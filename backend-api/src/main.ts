@@ -35,7 +35,6 @@ async function bootstrap() {
   // Porta configurável por ambiente; cai para 3000 no desenvolvimento local.
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  // eslint-disable-next-line no-console
   console.log(`🐾 PetMatch API rodando em http://localhost:${port}`);
 }
 
