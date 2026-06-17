@@ -79,18 +79,18 @@ describe('PetsController', () => {
   });
 
   describe('update', () => {
-    it('chama service.update com id e DTO', async () => {
+    it('chama service.update com id, DTO e ownerId', async () => {
       const dto = { name: 'Rex' } as any;
-      const result = await controller.update('id', dto);
-      expect(service.update).toHaveBeenCalledWith('id', dto);
+      const result = await controller.update('id', dto, ownerId);
+      expect(service.update).toHaveBeenCalledWith('id', dto, ownerId);
       expect(result).toEqual(mockPetResult);
     });
   });
 
   describe('remove', () => {
-    it('chama service.remove com o id', async () => {
-      const result = await controller.remove('id');
-      expect(service.remove).toHaveBeenCalledWith('id');
+    it('chama service.remove com id e ownerId', async () => {
+      const result = await controller.remove('id', ownerId);
+      expect(service.remove).toHaveBeenCalledWith('id', ownerId);
       expect(result).toEqual(mockPetResult);
     });
   });

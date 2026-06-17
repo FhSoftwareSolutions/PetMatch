@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { createPet, uploadPhoto, type NewPet, type Pet } from '../services/api';
 import { CITIES, GENDERS, SEEKINGS, SIZES, SPECIES } from '../lib/options';
+import { isLoggedIn } from '../lib/session';
 
 interface RegisterPetPageProps {
   /** Quando true, é o cadastro inicial (mostra boas-vindas e "pular"). */
@@ -282,10 +283,14 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
               }}
               placeholder="https://… (cole uma URL ou envie um arquivo)"
             />
-            <div className="geo-row">
-              <input type="file" accept="image/*" onChange={onPickFile} disabled={uploading} />
-              {uploading && <span className="geo-msg">Enviando…</span>}
-            </div>
+            {isLoggedIn() ? (
+              <div className="geo-row">
+                <input type="file" accept="image/*" onChange={onPickFile} disabled={uploading} />
+                {uploading && <span className="geo-msg">Enviando…</span>}
+              </div>
+            ) : (
+              <span className="auth-hint">Entre na sua conta para enviar arquivos (ou cole uma URL acima).</span>
+            )}
           </label>
 
           <label className="field">

@@ -214,6 +214,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 /* Botão de geolocalização no cadastro de pet. */
 .geo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .geo-msg{font-weight:700;font-size:13px;color:var(--mint)}
+.auth-hint{font-weight:700;font-size:12.5px;color:var(--muted)}
 
 /* Chat. */
 .chat-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}

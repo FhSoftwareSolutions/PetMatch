@@ -54,13 +54,17 @@ export class PetsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
-    return this.petsService.update(id, updatePetDto);
+  update(
+    @Param('id') id: string,
+    @Body() updatePetDto: UpdatePetDto,
+    @OwnerId() ownerId: Types.ObjectId,
+  ) {
+    return this.petsService.update(id, updatePetDto, ownerId);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  remove(@Param('id') id: string) {
-    return this.petsService.remove(id);
+  remove(@Param('id') id: string, @OwnerId() ownerId: Types.ObjectId) {
+    return this.petsService.remove(id, ownerId);
   }
 }

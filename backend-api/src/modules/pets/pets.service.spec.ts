@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import mongoose from 'mongoose';
 
 import { PetsService } from './pets.service';
@@ -185,19 +185,39 @@ describe('PetsService', () => {
   });
 
   describe('update', () => {
-    it('atualiza e retorna o pet', async () => {
+    it('atualiza quando é o dono', async () => {
       petModelMock.findByIdAndUpdate.mockReturnValue({
         exec: jest.fn().mockResolvedValue({ ...mockOrigin, name: 'Rex II' }),
       });
-      const result: any = await service.update(mockPetId.toString(), { name: 'Rex II' });
+      const result: any = await service.update(mockPetId.toString(), { name: 'Rex II' }, mockOwnerId);
       expect(result.name).toBe('Rex II');
+    });
+
+    it('lança Forbidden quando não é o dono', async () => {
+      petModelMock.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ ...mockOrigin, ownerId: new mongoose.Types.ObjectId() }),
+      });
+      await expect(
+        service.update(mockPetId.toString(), { name: 'x' }, mockOwnerId),
+      ).rejects.toThrow(ForbiddenException);
+      expect(petModelMock.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });
 
   describe('remove', () => {
-    it('remove e retorna o pet', async () => {
-      const result: any = await service.remove(mockPetId.toString());
+    it('remove quando é o dono', async () => {
+      const result: any = await service.remove(mockPetId.toString(), mockOwnerId);
       expect(result.name).toBe('Rex');
+    });
+
+    it('lança Forbidden quando não é o dono', async () => {
+      petModelMock.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ ...mockOrigin, ownerId: new mongoose.Types.ObjectId() }),
+      });
+      await expect(service.remove(mockPetId.toString(), mockOwnerId)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(petModelMock.findByIdAndDelete).not.toHaveBeenCalled();
     });
   });
 });

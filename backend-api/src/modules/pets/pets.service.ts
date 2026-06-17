@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 
@@ -61,18 +66,29 @@ export class PetsService {
     return pet;
   }
 
-  async update(id: string, dto: UpdatePetDto): Promise<PetDocument> {
-    this.assertObjectId(id);
+  async update(id: string, dto: UpdatePetDto, ownerId: Types.ObjectId): Promise<PetDocument> {
+    await this.assertOwnership(id, ownerId);
     const updated = await this.petModel.findByIdAndUpdate(id, { ...dto }, { new: true }).exec();
     if (!updated) throw new NotFoundException(`Pet com ID ${id} não encontrado`);
     return updated;
   }
 
-  async remove(id: string): Promise<PetDocument> {
-    this.assertObjectId(id);
+  async remove(id: string, ownerId: Types.ObjectId): Promise<PetDocument> {
+    await this.assertOwnership(id, ownerId);
     const deleted = await this.petModel.findByIdAndDelete(id).exec();
     if (!deleted) throw new NotFoundException(`Pet com ID ${id} não encontrado`);
     return deleted;
+  }
+
+  /** Garante que o pet existe e pertence ao dono (autorização de escrita). */
+  private async assertOwnership(id: string, ownerId: Types.ObjectId): Promise<PetDocument> {
+    this.assertObjectId(id);
+    const pet = await this.petModel.findById(id).exec();
+    if (!pet) throw new NotFoundException(`Pet com ID ${id} não encontrado`);
+    if (!(pet.ownerId as Types.ObjectId).equals(ownerId)) {
+      throw new ForbiddenException('Você não é o dono deste pet.');
+    }
+    return pet;
   }
 
   /**

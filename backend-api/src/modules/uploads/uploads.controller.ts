@@ -3,6 +3,7 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -11,6 +12,8 @@ import { extname } from 'path';
 import { mkdirSync } from 'fs';
 import { randomBytes } from 'crypto';
 
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
 /** Pasta de upload (em disco) e base pública para montar a URL retornada. */
 export const UPLOAD_DIR = process.env.UPLOAD_DIR ?? 'uploads';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -18,7 +21,10 @@ const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
 // Garante que a pasta exista antes do multer tentar gravar.
 mkdirSync(UPLOAD_DIR, { recursive: true });
 
+// Exige login: evita upload anônimo (abuso/enchimento de disco). Quem não tem
+// conta ainda pode informar a foto por URL no cadastro.
 @Controller('uploads')
+@UseGuards(JwtAuthGuard)
 export class UploadsController {
   /** POST /uploads (multipart, campo "file") — salva a imagem e devolve { url }. */
   @Post()

@@ -152,6 +152,8 @@ serviços (`gender`/`size`/`seeking` minúsculos, `ageMonths`, `location` GeoJSO
 - `GET /pets` (lista), `GET /pets/mine` (do dono) e `GET /pets/feed?petId=`
   (delega ao motor de recomendação, com fallback no Mongo se ele cair).
 - `POST /swipes` com persistência e **match recíproco** real (cria o `Match`).
+- **Autorização de escrita**: editar/excluir pet exige ser o dono (`@OwnerId`);
+  `POST /uploads` exige login. Leitura do feed/pets segue pública.
 - `GET /matches` e chat (`GET`/`POST /matches/:matchId/messages`).
 - **Autenticação JWT** (`/auth/register`, `/auth/login`, `/users/me`, bcrypt);
   a identidade anônima por `X-Owner-Id` segue funcionando para quem não loga.
