@@ -1,52 +1,38 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, IsArray, IsBoolean, IsObject, ValidateNested, ArrayMinSize } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsArray, IsBoolean, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PetLocationDto } from './create-pet.dto';
 
-export class PetLocationDto {
+export class UpdatePetDto {
   @IsString()
-  @IsNotEmpty()
-  @IsEnum(['Point'])
-  type!: string;
-
-  @IsArray()
-  @ArrayMinSize(2)
-  coordinates!: number[];
-}
-
-export class CreatePetDto {
-  @IsString()
-  @IsNotEmpty()
-  ownerId!: string;
+  @IsOptional()
+  name?: string;
 
   @IsString()
-  @IsNotEmpty()
-  name!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  species!: string;
+  @IsOptional()
+  species?: string;
 
   @IsString()
   @IsOptional()
   breed?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(['Macho', 'Fêmea'])
-  gender!: string;
+  gender?: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  birthDate!: string;
+  @IsOptional()
+  birthDate?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(['Pequeno', 'Médio', 'Grande'])
-  size!: string;
+  size?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(['Socialização', 'Cruzamento'])
-  purpose!: string;
+  purpose?: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -66,9 +52,9 @@ export class CreatePetDto {
   characteristics?: Record<string, any>;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(['Baixa', 'Média', 'Alta'])
-  energyLevel!: string;
+  energyLevel?: string;
 
   @IsBoolean()
   @IsOptional()
@@ -84,6 +70,10 @@ export class CreatePetDto {
 
   @ValidateNested()
   @Type(() => PetLocationDto)
-  @IsNotEmpty()
-  location!: PetLocationDto;
+  @IsOptional()
+  location?: PetLocationDto;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

@@ -1,33 +1,47 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { Types } from 'mongoose';
-
-import { OwnerId } from '../../common/owner-id.decorator';
-import { CreatePetDto } from './dto/create-pet.dto';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { PetsService } from './pets.service';
+import { CreatePetDto } from './dto/create-pet.dto';
+import { UpdatePetDto } from './dto/update-pet.dto';
 
-/** Endpoints REST de pets consumidos pelos frontends (web/mobile). */
 @Controller('pets')
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 
-  /** GET /pets — lista simples dos pets disponíveis. */
-  @Get()
-  findAll() {
-    return this.petsService.findFeed();
-  }
-
-  /**
-   * GET /pets/feed?petId=... — feed ORDENADO pelo recommendation-engine para o
-   * pet de origem informado. Sem `petId`, devolve a lista simples.
-   */
-  @Get('feed')
-  feed(@Query('petId') petId?: string) {
-    return petId ? this.petsService.findRecommendedFeed(petId) : this.petsService.findFeed();
-  }
-
-  /** POST /pets — cadastra um novo pet (dono = identidade do header X-Owner-Id). */
   @Post()
-  create(@Body() dto: CreatePetDto, @OwnerId() ownerId: Types.ObjectId) {
-    return this.petsService.create(dto, ownerId);
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createPetDto: CreatePetDto) {
+    return this.petsService.create(createPetDto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.petsService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
+    return this.petsService.update(id, updatePetDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  remove(@Param('id') id: string) {
+    return this.petsService.remove(id);
+  }
+
+  @Get(':id/feed')
+  getDiscoveryFeed(
+    @Param('id') id: string,
+    @Query('species') species?: string,
+    @Query('maxDistanceKm') maxDistanceKm?: string,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+  ) {
+    return this.petsService.getDiscoveryFeed(id, {
+      species,
+      maxDistanceKm: maxDistanceKm ? parseFloat(maxDistanceKm) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      page: page ? parseInt(page, 10) : undefined,
+    });
   }
 }

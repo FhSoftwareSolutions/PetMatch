@@ -6,35 +6,6 @@ export type PetDocument = Pet & Document;
 
 /** Informações de saúde do pet (subdocumento). */
 @Schema({ _id: false })
-export class PetHealth {
-  @Prop({ default: false })
-  neutered!: boolean;
-
-  @Prop({ default: false })
-  vaccinated!: boolean;
-
-  @Prop({ default: false })
-  specialNeeds!: boolean;
-}
-
-/** Compatibilidade de convivência do pet (subdocumento). */
-@Schema({ _id: false })
-export class PetCompatibility {
-  @Prop({ default: false })
-  goodWithDogs!: boolean;
-
-  @Prop({ default: false })
-  goodWithCats!: boolean;
-
-  @Prop({ default: false })
-  goodWithKids!: boolean;
-}
-
-/**
- * Localização do pet no formato GeoJSON Point.
- * As coordenadas seguem a ordem GeoJSON: [longitude, latitude].
- */
-@Schema({ _id: false })
 export class PetLocation {
   @Prop({ required: true, enum: ['Point'] })
   type!: string;
@@ -75,26 +46,17 @@ export class Pet {
   @Prop()
   breed?: string;
 
-  @Prop({ required: true, enum: ['macho', 'femea'] })
+  @Prop({ required: true, enum: ['Macho', 'Fêmea'] })
   gender!: string;
 
-  @Prop({ required: true, min: 0 })
-  ageMonths!: number;
+  @Prop({ required: true })
+  birthDate!: Date;
 
-  @Prop({ required: true, enum: ['pequeno', 'medio', 'grande'] })
+  @Prop({ required: true, enum: ['Pequeno', 'Médio', 'Grande'] })
   size!: string;
 
-  @Prop({ required: true, enum: ['socializacao', 'cruzamento', 'ambos'] })
-  seeking!: string;
-
-  @Prop({ type: [String], default: [] })
-  temperament!: string[];
-
-  @Prop({ type: PetHealth, default: () => ({}) })
-  health!: PetHealth;
-
-  @Prop({ type: PetCompatibility, default: () => ({}) })
-  compatibility!: PetCompatibility;
+  @Prop({ required: true, enum: ['Socialização', 'Cruzamento'] })
+  purpose!: string;
 
   @Prop({ type: [String], default: [] })
   photos!: string[];
@@ -105,11 +67,26 @@ export class Pet {
   @Prop()
   bio?: string;
 
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
+  characteristics!: Record<string, any>;
+
+  @Prop({ required: true, enum: ['Baixa', 'Média', 'Alta'] })
+  energyLevel!: string;
+
+  @Prop({ default: true })
+  sociableWithOtherPets!: boolean;
+
+  @Prop({ default: false })
+  castrated!: boolean;
+
+  @Prop({ default: false })
+  vaccinesUpToDate!: boolean;
+
   @Prop({ type: PetLocation, required: true })
   location!: PetLocation;
 
   @Prop({ default: true })
-  active!: boolean;
+  isActive!: boolean;
 
   @Prop({ default: 'available', enum: ['available', 'hidden', 'adopted'] })
   status!: string;
@@ -131,7 +108,8 @@ export const PetSchema = SchemaFactory.createForClass(Pet);
 //   desambiguar entre os dois índices geográficos abaixo.
 PetSchema.index({ location: '2dsphere' });
 PetSchema.index({ ownerId: 1 });
-PetSchema.index({ seeking: 1 });
+PetSchema.index({ purpose: 1 });
 PetSchema.index({ status: 1 });
 PetSchema.index({ species: 1 });
-PetSchema.index({ location: '2dsphere', seeking: 1, status: 1 });
+PetSchema.index({ location: '2dsphere', purpose: 1, status: 1 });
+export const PetLocationSchema = SchemaFactory.createForClass(PetLocation);
