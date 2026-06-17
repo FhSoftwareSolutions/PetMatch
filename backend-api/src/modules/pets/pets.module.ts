@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { PetsController } from './pets.controller';
-import { PetsService } from './pets.service';
 import { Pet, PetSchema } from './schemas/pet.schema';
 import { MatchesModule } from '../matches/matches.module';
 
