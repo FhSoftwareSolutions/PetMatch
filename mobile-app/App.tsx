@@ -1,30 +1,35 @@
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import RootNavigator from './src/navigation/RootNavigator';
+import { hydrateSession } from './src/lib/session';
+import { colors } from './src/theme';
+
+/** Raiz do app: hidrata a sessão do disco e monta a navegação. */
 export default function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    hydrateSession().finally(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+        <ActivityIndicator size="large" color={colors.coral} />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🐾 PetMatch</Text>
-      <Text style={styles.subtitle}>Andaime inicial do app mobile</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootNavigator />
+        <StatusBar style="dark" />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#666',
-  },
-});
