@@ -4,19 +4,21 @@ import { Model, Types } from 'mongoose';
 
 import { CreateSwipeDto } from './dto/create-swipe.dto';
 import { Swipe, SwipeDocument } from './schemas/swipe.schema';
+import { MatchesService } from './matches.service';
 
 /** Resultado de registrar um swipe. */
 export interface SwipeResult {
   // true quando este like fecha um match recíproco (o alvo já havia curtido a
-  // origem). A PERSISTÊNCIA do Match + o chat ficam para a Etapa 2; aqui apenas
-  // sinalizamos a reciprocidade real para o frontend exibir a tela de match.
+  // origem). Nesse caso o documento Match é criado e seu id volta em matchId.
   matched: boolean;
+  matchId?: string;
 }
 
 @Injectable()
 export class SwipesService {
   constructor(
     @InjectModel(Swipe.name) private readonly swipeModel: Model<SwipeDocument>,
+    private readonly matchesService: MatchesService,
   ) {}
 
   /**
@@ -44,6 +46,9 @@ export class SwipesService {
       targetPetId: petId,
       type: 'like',
     });
-    return { matched: Boolean(reciprocal) };
+    if (!reciprocal) return { matched: false };
+
+    const match = await this.matchesService.ensureFromReciprocalLike(petId, targetPetId);
+    return { matched: true, matchId: match?.id };
   }
 }
