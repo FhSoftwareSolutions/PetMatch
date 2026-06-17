@@ -2,10 +2,12 @@
 
 **"Tinder para Pets"** — um aplicativo que conecta donos de pets para **cruzamento** ou **socialização (brincadeiras)**, usando um sistema de recomendação baseado em **geolocalização** e **filtragem de conteúdo**.
 
-> **Observação:** o projeto está em construção. O **motor de recomendação** já
-> tem o pipeline (geo + conteúdo) implementado e testado, e o **frontend web**
-> já roda a tela de swipe com dados mock. O **backend-api** (modelagem do banco)
-> e o **app mobile** ainda são andaimes (scaffolding) — sem lógica de negócio.
+> **Observação:** o projeto já funciona ponta a ponta na web. O **backend-api**
+> (NestJS) expõe o CRUD de pets, o feed e os swipes; o **motor de recomendação**
+> (geo + conteúdo) ordena o feed; e o **frontend web** consome a API real
+> (cadastro, swipe e match recíproco). O **app mobile** ainda é um andaime
+> (scaffolding). Autenticação, persistência de match/chat e o app mobile são os
+> próximos passos.
 
 ---
 
@@ -78,7 +80,14 @@ npm run start:dev
 ```
 
 A API sobe em `http://localhost:3000`.
-Variável opcional: `MONGO_URI` (padrão `mongodb://localhost:27017/petmatch`).
+Variáveis opcionais: `MONGO_URI` (padrão `mongodb://127.0.0.1:27017/petmatch`) e
+`AI_ENGINE_URL` (padrão `http://127.0.0.1:8000`, usado pelo feed).
+
+Popular o banco com pets de exemplo (precisa do MongoDB no ar):
+
+```bash
+npm run seed
+```
 
 ### 2. Motor de Recomendação (FastAPI)
 
@@ -114,54 +123,51 @@ npm run dev
 ```
 
 A aplicação web sobe em `http://localhost:5173` com a tela de **swipe** (deck de
-pets com dados mock). Detalhes em [`web-app/README.md`](web-app/README.md).
+pets vindos da API/feed). Detalhes em [`web-app/README.md`](web-app/README.md).
 
 ---
 
+## Status atual
+
+Já funciona, ponta a ponta na web e com contrato unificado entre os serviços
+(`gender`/`size`/`seeking` minúsculos, `ageMonths`, `location` GeoJSON):
+
+- **Backend (NestJS):** CRUD de pets com DTOs + `ValidationPipe`; índices `2dsphere`;
+  `GET /pets` (lista), `GET /pets/feed?petId=` (delega ao motor, com fallback no
+  Mongo se o motor cair), `POST /pets` (dono pelo header `X-Owner-Id`, `location`
+  derivada da cidade) e `POST /swipes` (persistência + match recíproco real).
+- **Motor de recomendação (FastAPI):** recall geográfico (`$geoNear`) + ranking de
+  conteúdo (scikit-learn); contratos Pydantic em camelCase.
+- **Frontend web:** onboarding, cadastro, feed recomendado, swipe e tela de match,
+  consumindo a API real.
+- **Seed:** `npm run seed` popula a coleção `pets` com exemplos.
+- **CI:** `.github/workflows/ci.yml` roda build/testes dos três serviços.
+
 ## Próximos passos
 
-Roteiro de implementação sugerido, mapeado na stack atual. Cada item parte do andaime já existente.
+### Backend / Banco
 
-### Infraestrutura e Banco de Dados (MongoDB)
-
-- Criar arquivos `.env` por serviço (connection string, portas, segredos) e um `.env.example` versionado.
-- Definir o índice geoespacial `2dsphere` na coleção de pets para habilitar busca por proximidade (`$near` / `$geoWithin`).
-- (Opcional) Adicionar serviço de cache (Redis) ao `docker-compose.yml` para o feed de recomendações.
-
-### Backend API (NestJS + Mongoose)
-
-- Modelar os **Schemas Mongoose**: `User`, `Pet` (com campo `location` do tipo GeoJSON `Point`) e `Match`.
-- Registrar os schemas nos módulos via `MongooseModule.forFeature(...)`.
-- Implementar **DTOs + validação** com `class-validator` / `class-transformer` (`ValidationPipe` global).
-- Criar os **controllers e services** com o CRUD de cada módulo (users, pets, matches).
-- Adicionar **autenticação** (JWT via `@nestjs/passport` + `@nestjs/jwt`).
-- Expor um endpoint de **feed/descoberta** que consome o `recommendation-engine`.
-- Configurar `ConfigModule` (`@nestjs/config`), CORS e documentação Swagger (`@nestjs/swagger`).
-
-### Motor de Recomendação (FastAPI + scikit-learn)
-
-- Conectar ao MongoDB via `pymongo` (ler perfis de pets e interações).
-- Criar o endpoint `POST /recommendations` que recebe um pet + localização e retorna candidatos ordenados.
-- Implementar a **filtragem por geolocalização** (raio de busca) combinada com **filtragem de conteúdo** (similaridade por features: espécie, raça, porte, temperamento) usando `scikit-learn`.
-- Definir os contratos (schemas Pydantic) de request/response compartilhados com o backend.
+- **Autenticação** (JWT via `@nestjs/passport` + `@nestjs/jwt`) substituindo o
+  `X-Owner-Id`/`DEMO_OWNER_ID` provisório.
+- Implementar **Users** (cadastro/perfil) — o módulo ainda é só schema.
+- **Persistir o Match** (Etapa 2): hoje a reciprocidade é detectada e sinalizada,
+  mas o documento `Match` e o **chat** ainda não são gravados/expostos. Corrigir
+  também o índice único de `Match` (`{ petIds: 1 }` é multikey e impediria um pet
+  de ter mais de um match — usar uma `pairKey` canônica).
+- `ConfigModule` (`@nestjs/config`) e **Swagger** (`@nestjs/swagger`).
+- (Opcional) cache (Redis) para o feed.
 
 ### App Mobile (React Native + Expo)
 
-- Adicionar **navegação** (`expo-router` ou `@react-navigation`).
-- Implementar as telas em `src/screens`: Login/Cadastro, Swipe/Match, Perfil do Pet, Lista de Matches, Chat.
-- Criar os **componentes** reutilizáveis em `src/components` (card de pet, botões de like/dislike, gesto de swipe).
-- Implementar a **camada de serviços** em `src/services` (cliente HTTP, ex.: `axios`, consumindo `API_BASE_URL`).
-- Adicionar gerenciamento de estado/sessão e permissão de **geolocalização** do dispositivo.
+- Navegação, telas (Login, Swipe/Match, Perfil, Matches, Chat), camada de serviços
+  consumindo `API_BASE_URL` e permissão de **geolocalização**.
 
-### Frontend Web (React + Vite)
+### Frontend Web
 
-- A tela de **swipe** (deck, histórico, match) já existe em `src/pages` e `src/components`, hoje com dados mock (`src/data/pets.ts`).
-- Consumir pets reais da API NestJS / motor de recomendação pela **camada de serviços** (`src/services/api.ts`), no lugar do mock.
-- Adicionar **roteamento** (`react-router-dom`) e novas telas (login, perfil, lista de matches, chat).
+- **Roteamento** (`react-router-dom`) e telas de login, perfil, lista de matches e chat.
 
 ### Transversais
 
-- Rodar as instalações de dependências (`npm install` / `pip install`) em cada serviço.
-- Configurar **lint e formatação** (ESLint + Prettier no Node; Ruff/Black no Python).
-- Adicionar **testes** (Jest no NestJS, Pytest no engine, Testing Library no front).
-- Configurar **CI** (lint + testes + build) e, futuramente, Dockerfiles por serviço para deploy.
+- **Lint/format** (ESLint + Prettier no Node; Ruff/Black no Python) e testes de
+  componente no front (Testing Library).
+- Dockerfiles por serviço para deploy.
