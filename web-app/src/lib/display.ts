@@ -27,13 +27,15 @@ export function emojiFor(species: string): string {
 }
 
 // Paleta de gradientes para o fundo do card (usada no fallback sem foto).
+// Realinhada ao design system "Warm Playful Refinado": apenas hues da marca
+// (coral / mint / sun / info), sem roxos/azuis-claros fora da identidade.
 const GRADIENTS: [string, string][] = [
-  ['#FFB36B', '#FF6B5E'],
-  ['#8E7CFF', '#5B7CFF'],
-  ['#19B6A3', '#0E8C7E'],
-  ['#FF8FB1', '#E8473A'],
-  ['#FFC94B', '#F2933B'],
-  ['#7CD4FF', '#3B8DF2'],
+  ['#E14A3C', '#FF6B5E'], // coral-strong -> coral
+  ['#19B6A3', '#0E7A6E'], // mint -> mint-deep
+  ['#FFC94B', '#A66B00'], // sun -> sun-deep
+  ['#5567C9', '#3B4FB0'], // info -> info escuro
+  ['#FF6B5E', '#C8392C'], // coral -> coral-deep
+  ['#0E7A6E', '#19B6A3'], // mint-deep -> mint
 ];
 
 /** Escolhe um gradiente estável a partir do id do pet. */

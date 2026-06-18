@@ -17,6 +17,17 @@ import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { OwnerId } from '../../common/owner-id.decorator';
 
+/**
+ * CRUD de pets + feed recomendado (a entidade central do PetMatch).
+ *
+ * Mapeia as rotas HTTP para o PetsService:
+ *   POST   /pets        cria        | GET /pets       lista disponíveis
+ *   GET    /pets/:id    lê um       | PATCH /pets/:id  atualiza (dono)
+ *   DELETE /pets/:id    remove (dono)| GET /pets/feed   feed recomendado
+ *
+ * IMPORTANTE: as rotas fixas (`feed`, `mine`) são declaradas ANTES de `:id`,
+ * senão o Nest capturaria "feed"/"mine" como se fossem um id.
+ */
 @Controller('pets')
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}

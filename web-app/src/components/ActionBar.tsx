@@ -1,3 +1,5 @@
+import { RotateCcw, X, Heart } from 'lucide-react';
+
 interface ActionBarProps {
   /** Passa (descarta) o card do topo. */
   onNope: () => void;
@@ -25,7 +27,7 @@ export default function ActionBar({ onNope, onLike, onRewind, canRewind, canSwip
         title="Voltar"
         aria-label="Voltar"
       >
-        ↩
+        <RotateCcw aria-hidden />
       </button>
       <button
         className="fab lg nope"
@@ -34,11 +36,7 @@ export default function ActionBar({ onNope, onLike, onRewind, canRewind, canSwip
         title="Passar"
         aria-label="Passar"
       >
-        ✕
-      </button>
-      {/* Detalhes do pet ainda não implementado — desabilitado por enquanto. */}
-      <button className="fab sm info" disabled title="Detalhes (em breve)" aria-label="Detalhes (em breve)">
-        ℹ
+        <X aria-hidden />
       </button>
       <button
         className="fab lg like"
@@ -47,7 +45,7 @@ export default function ActionBar({ onNope, onLike, onRewind, canRewind, canSwip
         title="Curtir"
         aria-label="Curtir"
       >
-        ♥
+        <Heart aria-hidden />
       </button>
     </div>
   );

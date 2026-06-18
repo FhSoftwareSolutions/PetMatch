@@ -14,9 +14,17 @@ export class MessagesService {
     private readonly matchesService: MatchesService,
   ) {}
 
-  /** Mensagens de um match, em ordem cronológica (autorizado ao dono). */
+  /**
+   * Mensagens de um match, em ordem cronológica (autorizado ao dono).
+   * Abrir a conversa marca como lidas as mensagens recebidas pelo dono — é o que
+   * zera o badge de notificações daquele match (e o total na navegação).
+   */
   async list(matchId: string, ownerId: Types.ObjectId): Promise<MessageDocument[]> {
     const match = await this.matchesService.getForOwner(matchId, ownerId);
+    await this.messageModel.updateMany(
+      { matchId: match._id, recipientId: ownerId, read: false },
+      { $set: { read: true } },
+    );
     return this.messageModel.find({ matchId: match._id }).sort({ createdAt: 1 }).exec();
   }
 

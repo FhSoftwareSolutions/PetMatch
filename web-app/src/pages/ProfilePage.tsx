@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchMyPets, deletePet, type Pet } from '../services/api';
 import { getAccount, clearSession, clearMyPet, getMyPet } from '../lib/session';
 import { emojiFor, speciesLine } from '../lib/display';
+import TopBar from '../components/TopBar';
+import { User, Trash2 } from 'lucide-react';
 
 /** Perfil: conta (login/logout) e gestão dos pets do usuário. */
 export default function ProfilePage() {
@@ -44,16 +46,7 @@ export default function ProfilePage() {
 
   return (
     <div className="app">
-      <header>
-        <div className="brand">
-          <span className="pin">🐾</span>
-          <b>Meu</b>
-          <i>Perfil</i>
-        </div>
-        <button className="icon-btn" onClick={() => navigate('/')} title="Voltar" aria-label="Voltar">
-          ←
-        </button>
-      </header>
+      <TopBar />
 
       <div className="list-body">
         {/* Conta */}
@@ -62,7 +55,7 @@ export default function ProfilePage() {
             <>
               <div className="profile-account">
                 <div className="match-avatar">
-                  <span>👤</span>
+                  <User aria-hidden />
                 </div>
                 <div className="match-meta">
                   <strong>{account.name}</strong>
@@ -123,7 +116,7 @@ export default function ProfilePage() {
                 title="Excluir"
                 aria-label={`Excluir ${pet.name}`}
               >
-                🗑
+                <Trash2 aria-hidden />
               </button>
             </div>
           ))}

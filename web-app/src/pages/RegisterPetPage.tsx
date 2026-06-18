@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { createPet, uploadPhoto, type NewPet, type Pet } from '../services/api';
 import { CITIES, GENDERS, SEEKINGS, SIZES, SPECIES } from '../lib/options';
 import { isLoggedIn } from '../lib/session';
+import { PawPrint, MapPin, X } from 'lucide-react';
 
 interface RegisterPetPageProps {
   /** Quando true, é o cadastro inicial (mostra boas-vindas e "pular"). */
@@ -138,13 +139,13 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
     <div className="app register">
       <header>
         <div className="brand">
-          <span className="pin">🐾</span>
+          <span className="pin"><PawPrint aria-hidden /></span>
           <b>Pet</b>
           <i>Match</i>
         </div>
         {!isOnboarding && (
           <button className="icon-btn" onClick={onCancel} title="Voltar" aria-label="Voltar">
-            ✕
+            <X aria-hidden />
           </button>
         )}
       </header>
@@ -257,7 +258,7 @@ export default function RegisterPetPage({ isOnboarding, onDone, onCancel }: Regi
 
           <div className="geo-row">
             <button type="button" className="btn-ghost-dark" onClick={useMyLocation}>
-              📍 Usar minha localização
+              <MapPin className="ic-inline" aria-hidden /> Usar minha localização
             </button>
             {geoMsg && <span className="geo-msg">{geoMsg}</span>}
           </div>

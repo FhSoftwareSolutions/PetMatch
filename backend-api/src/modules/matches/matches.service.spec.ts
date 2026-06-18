@@ -5,11 +5,13 @@ import mongoose from 'mongoose';
 
 import { MatchesService } from './matches.service';
 import { Match } from './schemas/match.schema';
+import { Message } from './schemas/message.schema';
 import { Pet } from '../pets/schemas/pet.schema';
 
 describe('MatchesService', () => {
   let service: MatchesService;
   let matchModelMock: any;
+  let messageModelMock: any;
   let petModelMock: any;
 
   const petA = {
@@ -39,11 +41,16 @@ describe('MatchesService', () => {
     petModelMock = {
       find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([petA, petB]) }),
     };
+    messageModelMock = {
+      aggregate: jest.fn().mockResolvedValue([]),
+      countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(0) }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MatchesService,
         { provide: getModelToken(Match.name), useValue: matchModelMock },
+        { provide: getModelToken(Message.name), useValue: messageModelMock },
         { provide: getModelToken(Pet.name), useValue: petModelMock },
       ],
     }).compile();
@@ -76,13 +83,40 @@ describe('MatchesService', () => {
   });
 
   describe('listForOwner', () => {
-    it('lista por ownerId ordenando por última mensagem', async () => {
+    it('lista por ownerId ordenando por última mensagem, anexando unreadCount', async () => {
+      const mid = new mongoose.Types.ObjectId();
+      const m1 = { _id: mid, toJSON: () => ({ id: 'm1' }) };
       matchModelMock.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([{ id: 'm1' }]) }),
+        sort: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([m1]) }),
+      });
+      messageModelMock.aggregate.mockResolvedValue([{ _id: mid, count: 2 }]);
+
+      const result = await service.listForOwner(petA.ownerId as any);
+      expect(result).toEqual([{ id: 'm1', unreadCount: 2 }]);
+      expect(matchModelMock.find).toHaveBeenCalledWith({ ownerIds: petA.ownerId });
+    });
+
+    it('devolve lista vazia sem consultar mensagens quando não há matches', async () => {
+      matchModelMock.find.mockReturnValue({
+        sort: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
       });
       const result = await service.listForOwner(petA.ownerId as any);
-      expect(result).toEqual([{ id: 'm1' }]);
-      expect(matchModelMock.find).toHaveBeenCalledWith({ ownerIds: petA.ownerId });
+      expect(result).toEqual([]);
+      expect(messageModelMock.aggregate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unreadCountForOwner', () => {
+    it('conta as mensagens não lidas destinadas ao dono', async () => {
+      messageModelMock.countDocuments.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(5),
+      });
+      const result = await service.unreadCountForOwner(petA.ownerId as any);
+      expect(result).toBe(5);
+      expect(messageModelMock.countDocuments).toHaveBeenCalledWith({
+        recipientId: petA.ownerId,
+        read: false,
+      });
     });
   });
 

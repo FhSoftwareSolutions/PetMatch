@@ -234,6 +234,8 @@ export interface Match {
   status: string;
   lastMessageAt?: string;
   createdAt?: string;
+  /** Mensagens não lidas destinadas ao dono atual nesta conversa. */
+  unreadCount?: number;
   summary: { petA: MatchPet; petB: MatchPet; ownerA: MatchOwner; ownerB: MatchOwner };
 }
 
@@ -247,11 +249,19 @@ export interface Message {
   createdAt?: string;
 }
 
-/** Lista os matches do dono atual. */
+/** Lista os matches do dono atual (cada um com `unreadCount`). */
 export async function fetchMatches(): Promise<Match[]> {
   const res = await fetch(`${API_BASE_URL}/matches`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`Não foi possível carregar seus matches (HTTP ${res.status}).`);
   return res.json();
+}
+
+/** Total de mensagens não lidas do dono atual (badge de notificações). */
+export async function fetchUnreadCount(): Promise<number> {
+  const res = await fetch(`${API_BASE_URL}/matches/unread-count`, { headers: authHeaders() });
+  if (!res.ok) return 0; // best-effort: badge não deve quebrar a navegação
+  const data = await res.json();
+  return typeof data.count === 'number' ? data.count : 0;
 }
 
 /** Mensagens de um match, em ordem cronológica. */

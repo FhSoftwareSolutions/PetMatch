@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchMatches, type Match, type MatchPet } from '../services/api';
 import { currentOwnerId } from '../lib/session';
 import { emojiFor } from '../lib/display';
+import TopBar from '../components/TopBar';
+import { PawPrint, MessageCircle } from 'lucide-react';
 
 /** Pet do OUTRO dono no match (o que interessa exibir na lista). */
 function otherPet(match: Match, me: string): MatchPet {
@@ -31,16 +33,7 @@ export default function MatchesPage() {
 
   return (
     <div className="app">
-      <header>
-        <div className="brand">
-          <span className="pin">🐾</span>
-          <b>Meus</b>
-          <i>Matches</i>
-        </div>
-        <button className="icon-btn" onClick={() => navigate('/')} title="Voltar" aria-label="Voltar">
-          ←
-        </button>
-      </header>
+      <TopBar />
 
       <div className="list-body">
         {loading && <p className="list-hint">Carregando…</p>}
@@ -48,7 +41,7 @@ export default function MatchesPage() {
 
         {!loading && !error && matches.length === 0 && (
           <div className="empty-inline">
-            <div className="big">🐾</div>
+            <div className="big"><PawPrint aria-hidden /></div>
             <h3>Sem matches ainda</h3>
             <p>Curta pets no feed — quando o interesse for mútuo, eles aparecem aqui.</p>
           </div>
@@ -58,8 +51,13 @@ export default function MatchesPage() {
           !error &&
           matches.map((m) => {
             const pet = otherPet(m, me);
+            const unread = m.unreadCount ?? 0;
             return (
-              <button key={m.id} className="match-row" onClick={() => navigate(`/matches/${m.id}`)}>
+              <button
+                key={m.id}
+                className={`match-row${unread > 0 ? ' unread' : ''}`}
+                onClick={() => navigate(`/matches/${m.id}`)}
+              >
                 <div className="match-avatar">
                   {pet.mainPhotoUrl ? (
                     <img src={pet.mainPhotoUrl} alt={pet.name ?? 'pet'} />
@@ -69,9 +67,20 @@ export default function MatchesPage() {
                 </div>
                 <div className="match-meta">
                   <strong>{pet.name ?? 'Pet'}</strong>
-                  <span>{pet.species}</span>
+                  <span>
+                    {unread > 0
+                      ? `${unread} ${unread > 1 ? 'novas mensagens' : 'nova mensagem'}`
+                      : pet.species}
+                  </span>
                 </div>
-                <span className="match-go">Conversar →</span>
+                {unread > 0 && (
+                  <span className="match-badge" aria-hidden>
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
+                <span className="match-go" aria-label="Conversar">
+                  <MessageCircle className="ic-inline" aria-hidden />
+                </span>
               </button>
             );
           })}
