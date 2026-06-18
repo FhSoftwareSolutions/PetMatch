@@ -202,27 +202,17 @@ PetSchema.index({ location: <span class="st">'2dsphere'</span> });</pre>
     </div>
   </section>
 
-  <!-- 6 · CRUD -->
+  <!-- 6 · CRUD (lúdico) -->
   <section class="slide">
     <div class="inner">
-      <span class="sec-tag">Banco · CRUD</span>
-      <h2>CRUD completo de pets</h2>
-      <div class="code sm">
-        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">backend-api/src/modules/pets/pets.controller.ts</span></div>
-<pre>@Controller(<span class="st">'pets'</span>)
-<span class="kw">export class</span> PetsController {
-  @Post()      create(@Body() dto, @OwnerId() o) { <span class="cm">/* CREATE */</span> }
-  @Get()       findAll()                         { <span class="cm">/* READ lista */</span> }
-  @Get(<span class="st">':id'</span>)   findOne(@Param(<span class="st">'id'</span>) id)        { <span class="cm">/* READ um   */</span> }
-  @Patch(<span class="st">':id'</span>) update(id, dto, o)               { <span class="cm">/* UPDATE    */</span> }
-  @Delete(<span class="st">':id'</span>) remove(id, o)                    { <span class="cm">/* DELETE    */</span> }
-}</pre>
-      </div>
-      <div class="code sm">
-        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">pets.service.ts — create() persiste no Mongo</span></div>
-<pre><span class="kw">const</span> location = dto.location ?? { type: <span class="st">'Point'</span>, coordinates: coordsForCity(dto.city) };
-<span class="kw">const</span> created = <span class="kw">new</span> this.petModel({ ...dto, ownerId, location });
-<span class="kw">return</span> created.save();   <span class="cm">// ← grava o documento no MongoDB</span></pre>
+      <span class="sec-tag">Backend · CRUD</span>
+      <h2>CRUD de pets 🐾</h2>
+      <p class="lead">As quatro operações do pet, mapeadas direto para a API REST — tudo persistido no MongoDB (escritas só pelo dono).</p>
+      <div class="grid cols-2">
+        <div class="card mini"><div class="ic">➕</div><h3>Criar</h3><p><code>POST /pets</code> — cadastra um novo pet.</p></div>
+        <div class="card mini"><div class="ic">👀</div><h3>Ler</h3><p><code>GET /pets</code> &amp; <code>/pets/feed</code> — lista e feed.</p></div>
+        <div class="card mini"><div class="ic">✏️</div><h3>Atualizar</h3><p><code>PATCH /pets/:id</code> — edita o perfil.</p></div>
+        <div class="card mini"><div class="ic">🗑️</div><h3>Excluir</h3><p><code>DELETE /pets/:id</code> — remove o pet.</p></div>
       </div>
     </div>
   </section>
@@ -254,41 +244,32 @@ PetSchema.index({ location: <span class="st">'2dsphere'</span> });</pre>
       <span class="sec-tag">Motor de IA</span>
       <h2>Recomendação: geo + conteúdo</h2>
       <p class="lead"><b>recall</b> (quem é elegível) → <b>ranking</b> (em que ordem). Se o motor cair, o feed usa o Mongo direto.</p>
-      <div class="code sm">
+      <div class="code">
         <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">recommendation-engine/app/service.py</span></div>
 <pre><span class="kw">def</span> recommend(db, request, settings):
     origin = fetch_origin_pet(db, request.pet_id)
-    candidates = run_recall(db, origin, request.coordinates, radius_km, seeking, ...)  <span class="cm"># geo + filtros</span>
-    ranked = rank_candidates(origin, candidates, weight_distance=..., weight_content=...)  <span class="cm"># ordem</span>
+    <span class="cm"># 1) RECALL — candidatos elegíveis por geolocalização + filtros</span>
+    candidates = run_recall(db, origin, request.coordinates, radius_km, seeking, ...)
+    <span class="cm"># 2) RANKING — ordena por compatibilidade (conteúdo) + proximidade</span>
+    ranked = rank_candidates(origin, candidates, weight_distance=..., weight_content=...)
     <span class="kw">return</span> RecommendationResponse(count=len(ranked), results=ranked)</pre>
       </div>
-      <div class="code sm">
-        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">pets.service.ts — fallback geoespacial</span></div>
-<pre>query.location = { $nearSphere: {              <span class="cm">// consulta geoespacial NATIVA do Mongo</span>
-  $geometry: { type: <span class="st">'Point'</span>, coordinates: origin.location.coordinates },
-  $maxDistance: FEED_RADIUS_KM * <span class="st">1000</span> } };          <span class="cm">// raio em metros, já ordenado</span></pre>
-      </div>
+      <div class="note">Resiliente: se o motor cair, o feed usa a consulta geoespacial <code>$nearSphere</code> direto no MongoDB.</div>
     </div>
   </section>
 
-  <!-- 9 · CHAT & NOTIFICAÇÕES -->
+  <!-- 9 · CHAT & NOTIFICAÇÕES (lúdico) -->
   <section class="slide">
     <div class="inner">
       <span class="sec-tag">Chat &amp; notificações</span>
-      <h2>Mensagens não lidas</h2>
-      <div class="code sm">
-        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">messages.service.ts — abrir a conversa marca como lida</span></div>
-<pre><span class="kw">await</span> this.messageModel.updateMany(
-  { matchId: match._id, recipientId: ownerId, read: <span class="kw">false</span> },
-  { $set: { read: <span class="kw">true</span> } });   <span class="cm">// zera o badge daquele match</span></pre>
+      <h2>Conversas com aviso de novas mensagens 💬</h2>
+      <p class="lead">Cada match vira um chat — e o app avisa quando chega mensagem nova, na navegação e na lista.</p>
+      <div class="grid cols-3">
+        <div class="card mini"><div class="ic">✉️</div><h3>Chega mensagem</h3><p>O outro tutor escreve na conversa do match.</p></div>
+        <div class="card mini"><div class="ic">🔴</div><h3>Badge aparece</h3><p>Contador de não lidas no menu “Matches” e em cada conversa.</p></div>
+        <div class="card mini"><div class="ic">👀</div><h3>Abriu, zerou</h3><p>Ao abrir o chat, marca como lida e o badge some.</p></div>
       </div>
-      <div class="code sm">
-        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">matches.service.ts — conta não lidas (aggregation)</span></div>
-<pre><span class="kw">const</span> counts = <span class="kw">await</span> this.messageModel.aggregate([
-  { $match: { matchId: { $in: matchIds }, recipientId: ownerId, read: <span class="kw">false</span> } },
-  { $group: { _id: <span class="st">'$matchId'</span>, count: { $sum: <span class="st">1</span> } } } ]);
-<span class="kw">return</span> matches.map((m) =&gt; ({ ...m.toJSON(), unreadCount: byMatch.get(...) ?? <span class="st">0</span> }));</pre>
-      </div>
+      <div class="note">Nos bastidores: uma <b>agregação</b> no MongoDB conta as mensagens não lidas por conversa.</div>
     </div>
   </section>
 
