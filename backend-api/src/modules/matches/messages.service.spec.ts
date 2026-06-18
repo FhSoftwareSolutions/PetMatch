@@ -23,6 +23,7 @@ describe('MessagesService', () => {
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([{ id: 'msg-1' }]) }),
       }),
+      updateMany: jest.fn().mockResolvedValue({ acknowledged: true }),
       create: jest.fn().mockResolvedValue({ id: 'msg-new' }),
     };
     matchModelMock = { updateOne: jest.fn().mockResolvedValue({ acknowledged: true }) };
@@ -44,6 +45,11 @@ describe('MessagesService', () => {
     it('autoriza pelo dono e devolve a conversa em ordem', async () => {
       const result = await service.list(matchId.toString(), ownerId);
       expect(matchesServiceMock.getForOwner).toHaveBeenCalledWith(matchId.toString(), ownerId);
+      // Abrir a conversa marca as recebidas como lidas (zera notificações).
+      expect(messageModelMock.updateMany).toHaveBeenCalledWith(
+        { matchId, recipientId: ownerId, read: false },
+        { $set: { read: true } },
+      );
       expect(messageModelMock.find).toHaveBeenCalledWith({ matchId });
       expect(result).toEqual([{ id: 'msg-1' }]);
     });

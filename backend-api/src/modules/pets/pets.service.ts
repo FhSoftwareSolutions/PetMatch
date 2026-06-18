@@ -18,6 +18,11 @@ import { FEED_DEFAULT_LIMIT, FEED_RADIUS_KM, SEEKING_COMPAT } from './pets.const
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL ?? 'http://127.0.0.1:8000';
 const ENGINE_TIMEOUT_MS = 5000;
 
+/**
+ * Regras de negócio dos pets: o CRUD persistido no MongoDB (via Mongoose) e o
+ * feed recomendado. As escritas (update/remove) passam por `assertOwnership`,
+ * garantindo que só o dono altere o próprio pet.
+ */
 @Injectable()
 export class PetsService {
   constructor(
@@ -179,6 +184,9 @@ export class PetsService {
       if (origin.gender) query.gender = { $ne: origin.gender };
     }
 
+    // Consulta geoespacial nativa do MongoDB: `$nearSphere` traz os pets dentro
+    // de um raio (em metros) do pet de origem, JÁ ordenados do mais próximo ao
+    // mais distante. Depende do índice 2dsphere em `location` (ver pet.schema).
     if (origin.location?.coordinates) {
       query.location = {
         $nearSphere: {

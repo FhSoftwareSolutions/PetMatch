@@ -1,92 +1,268 @@
 /*
  * Estilos globais do frontend web do PetMatch.
  *
- * Tokens de cor em :root, layout do app (header / deck de cards / barra de
- * ações) e a tela de match. As fontes (Baloo 2, Nunito) são carregadas no
- * index.html via Google Fonts.
+ * Design system tokenizado em :root (cores, tipografia, espaçamento base-4,
+ * raios, sombras e tamanhos de componente), layout do app (header / deck de
+ * cards / barra de ações) e a tela de match.
+ *
+ * Direção: "Warm Playful Refinado" — base coral/cream acolhedora, porém
+ * ordenada: neutros quentes definidos, mint/sun/info como acentos (nunca como
+ * texto pequeno), ritmo de 4px, cantos generosos e contraste AA garantido.
+ * As fontes (Baloo 2, Nunito) são carregadas no index.html via Google Fonts.
  */
 
 :root{
-  --bg:#FFF3E9;
-  --ink:#241B2F;
-  --coral:#FF6B5E;
-  --coral-deep:#E8473A;
-  --mint:#19B6A3;
-  --sun:#FFC94B;
-  --muted:#9A8FA6;
-  --card-shadow: 0 18px 40px -12px rgba(36,27,47,.35);
+  /* ----- Cores: superfícies e fundos ----- */
+  --bg:#FFF3E9;            /* fundo base quente (cream) */
+  --bg-soft:#FFE0CF;       /* topo do gradiente radial do body (decorativo) */
+  --surface:#FFFFFF;       /* cards, inputs, fabs, topbar pills */
+  --surface-2:#FBF4EE;     /* superfície sutil (panel-match repouso) */
+  --surface-3:#F3E7DC;     /* hover/pressed sobre cream */
+  --border:#EADBCC;        /* borda padrão de inputs e divisores */
+  --border-strong:#DCC9B6; /* borda de botão fantasma / contorno perceptível */
+
+  /* ----- Cores: texto ----- */
+  --ink:#241B2F;           /* texto principal e ícones escuros (AAA) */
+  --ink-soft:#4A4055;      /* texto secundário forte (subtítulos) */
+  --muted:#675C73;         /* texto auxiliar/labels — passa AA sobre claro */
+
+  /* ----- Cores: marca (coral) — fill vs texto ----- */
+  --coral:#FF6B5E;         /* FILL de marca (botões/badges grandes); nunca texto pequeno */
+  --coral-strong:#CE3A2D;  /* FILL com texto branco pequeno (btn, bubble.me, badge) — branco ~4.9:1 (AA) */
+  --coral-deep:#C8392C;    /* hover/pressed e glifo .fab.nope — AA */
+  --coral-text:#C4382B;    /* TEXTO/LINK coral acessível (nav ativa, links) — AA */
+  --coral-rgb:255,107,94;  /* canal RGB do coral para rgba() em sombras/focus/tints */
+
+  /* ----- Cores: acentos ----- */
+  --mint:#19B6A3;          /* acento mint — FILL/tint (curtir) */
+  --mint-deep:#0E7A6E;     /* glifo .fab.like, texto .geo-msg — contraste 3:1 */
+  --sun:#FFC94B;           /* acento sun — FILL decorativo (nunca texto sobre claro) */
+  --sun-deep:#A66B00;      /* glifo .fab.rewind (âmbar escuro) — AA */
+  --info:#5567C9;          /* acento azul (.fab.info) dentro da paleta */
+
+  /* ----- Cores: estados e foto ----- */
+  --danger-bg:#FFE3DF;     /* fundo de .form-error (texto --coral-deep) */
+  --on-photo:#FFFFFF;      /* texto branco sobre foto do card (com scrim+sombra) */
+  --focus:#1F6FEB;         /* outline de :focus-visible (teclado) — 3:1 em claros */
+
+  /* ----- Tipografia ----- */
+  --font-display:'Baloo 2',system-ui,sans-serif; /* títulos, marca, destaques */
+  --font-body:'Nunito',system-ui,sans-serif;     /* corpo / UI */
+  --fw-regular:400;
+  --fw-semibold:600;
+  --fw-bold:700;
+  --fw-extrabold:800;
+  --text-xs:12px;       /* tags, badge, hints */
+  --text-sm:13px;       /* metas, spans de painel, reasons */
+  --text-base:15px;     /* CORPO padrão: nav, inputs, bubbles, botões secundários */
+  --text-md:17px;       /* títulos de painel, btn-primary, subtítulos */
+  --text-lg:20px;       /* h2 span do card */
+  --text-xl:24px;       /* marca, h3 de vazio, títulos de seção */
+  --text-2xl:28px;      /* nome do pet no card */
+  --text-3xl:30px;      /* register-title */
+  --text-display:46px;  /* título do overlay de match */
+  --emoji-card:140px;   /* emoji de fallback do card (decorativo, fora da ramp) */
+  --emoji-match:120px;  /* emoji da tela de match */
+
+  /* ----- Espaçamento (escala base-4) ----- */
+  --sp-0:0;
+  --sp-1:4px;
+  --sp-2:8px;
+  --sp-3:12px;
+  --sp-4:16px;
+  --sp-5:20px;
+  --sp-6:24px;
+  --sp-8:32px;
+  --sp-10:40px;
+  --sp-12:48px;
+  --gutter:24px;        /* gutter horizontal unificado dos containers (= sp-6) */
+
+  /* ----- Raios (por nível de superfície) ----- */
+  --radius-sm:12px;     /* chips de nav, tags */
+  --radius-md:14px;     /* controles: botões, inputs, icon-btn */
+  --radius-lg:18px;     /* superfícies de lista/painel */
+  --radius-xl:28px;     /* card de swipe e estado vazio (contrato do deck) */
+  --radius-pill:999px;  /* pills, score, tag, count */
+  --radius-circle:50%;  /* avatars e fabs */
+  --radius-bubble-tail:6px; /* canto "rabo" das bolhas de chat */
+
+  /* ----- Sombras (escala de elevação, base rgba(36,27,47,a)) ----- */
+  --shadow-1: 0 4px 14px rgba(36,27,47,.08);  /* baixo: nav/painel/lista/bubble */
+  --shadow-2: 0 8px 22px rgba(36,27,47,.14);  /* médio: fabs/flutuantes */
+  --shadow-3: 0 18px 40px -12px rgba(36,27,47,.35); /* alto: card de swipe */
+  --card-shadow: var(--shadow-3);             /* alias mantido p/ o card */
+  --shadow-coral: 0 8px 22px rgba(var(--coral-rgb),.32);    /* btn-primary */
+  --shadow-coral-sm: 0 6px 16px rgba(var(--coral-rgb),.30); /* btn-pill */
+  --focus-ring: 0 0 0 4px rgba(var(--coral-rgb),.18);       /* anel de foco em inputs */
+
+  /* ----- Tamanhos de componente ----- */
+  --ctl-h-sm:36px;      /* altura de controle pequeno (.btn-pill, .navlink compacto) */
+  --ctl-h-md:44px;      /* altura de controle padrão (botões, inputs, navlink) */
+  --size-icon-btn:44px; /* botão de ícone quadrado */
+  --fab-sm:48px;
+  --fab-lg:64px;
+  --fab-glyph-sm:24px;  /* ~52% do diâmetro */
+  --fab-glyph-lg:34px;
+  --avatar-sm:40px;
+  --avatar-md:56px;
+  --avatar-lg:140px;
+  --w-wide:1180px;      /* largura do dashboard de descoberta */
+  --w-read:760px;       /* largura de leitura (matches/chat/forms) */
+
   /* Respeita a área segura inferior em telas com notch. */
   --safe: env(safe-area-inset-bottom, 0px);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%}
 body{
-  font-family:'Nunito',system-ui,sans-serif;
+  font-family:var(--font-body);
   color:var(--ink);
-  background:radial-gradient(120% 80% at 50% -10%, #FFE0CF 0%, var(--bg) 60%);
+  background:radial-gradient(120% 80% at 50% -10%, var(--bg-soft) 0%, var(--bg) 60%);
   display:flex;justify-content:center;
   -webkit-tap-highlight-color:transparent;
   overflow:hidden;
 }
-/* Container do app: largura de celular, centralizado, ocupa a altura toda. */
-.app{width:100%;max-width:430px;height:100dvh;display:flex;flex-direction:column;position:relative}
 
-/* Topbar: marca + botão de recomeçar. */
-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
-.brand{display:flex;align-items:center;gap:8px;font-family:'Baloo 2';font-weight:800;font-size:24px;letter-spacing:-.5px}
+/* Foco de teclado global (WCAG 2.4.7). Não remover sem substituto. */
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* Em controles de fundo coral (ou sobre o overlay coral), o anel azul some
+   (1.2:1); usar anel escuro (--ink), que contrasta sobre coral/mint (~5.5:1). */
+.btn-primary:focus-visible,.btn-pill:focus-visible,.empty button:focus-visible,.overlay .primary:focus-visible,.overlay .ghost:focus-visible{outline-color:var(--ink)}
+
+/* Container do app: por padrão (mobile) ocupa a largura toda; no desktop vira
+   um painel largo centralizado (ver media query de responsividade abaixo). */
+.app{width:100%;max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative}
+/* Telas de formulário e chat usam a largura de leitura unificada. */
+.app.register{max-width:var(--w-read)}
+.app.chat{max-width:var(--w-read)}
+
+/* Cabeçalho simples (telas de formulário): marca + botão de fechar. Mesmo
+   gutter e tamanho de marca do TopBar, p/ a marca não "saltar" entre telas. */
+header{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--gutter) var(--sp-2)}
+.brand{display:flex;align-items:center;gap:var(--sp-2);font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-xl);letter-spacing:-.5px;text-decoration:none;color:inherit}
 .brand .pin{color:var(--coral)}
 .brand b{color:var(--ink)}
-.brand i{color:var(--mint);font-style:normal}
-.icon-btn{width:42px;height:42px;border:none;border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(36,27,47,.08);font-size:18px;cursor:pointer;display:grid;place-items:center;color:var(--ink)}
+.brand i{color:var(--mint-deep);font-style:normal}
+.icon-btn{width:var(--size-icon-btn);height:var(--size-icon-btn);border:none;border-radius:var(--radius-md);background:var(--surface);box-shadow:var(--shadow-1);font-size:var(--text-md);cursor:pointer;display:grid;place-items:center;color:var(--ink)}
 
-/* Deck: pilha de cards sobrepostos. */
-.deck-wrap{flex:1;position:relative;padding:8px 16px}
-.deck{position:absolute;inset:8px 16px}
-.card{position:absolute;inset:0;border-radius:28px;overflow:hidden;box-shadow:var(--card-shadow);background:#fff;will-change:transform;touch-action:none;cursor:grab;transform-origin:center 120%;transition:transform .3s ease}
+/* ===== Barra de topo do dashboard (componente TopBar) ===== */
+/* z-index acima do deck (.card usa z-index:10) p/ os cards arrastados nunca
+   cobrirem a barra de navegação. O overlay de match (z-index:50) ainda vence. */
+.topbar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--gutter);position:relative;z-index:20}
+.topnav{display:flex;align-items:center;gap:var(--sp-2);margin-left:var(--sp-4)}
+.navlink{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--ctl-h-md);line-height:1;position:relative;text-decoration:none;color:var(--muted);font-weight:var(--fw-extrabold);font-size:var(--text-base);padding:0 var(--sp-3);border-radius:var(--radius-sm);transition:background .15s ease,color .15s ease}
+.navlink:hover{background:var(--surface);color:var(--ink)}
+.navlink[aria-current="page"]{background:var(--surface);color:var(--coral-text);box-shadow:var(--shadow-1)}
+.navlink .ic{display:inline-flex;align-items:center;color:inherit}
+.topbar .header-actions{margin-left:auto}
+
+/* ===== Ícones SVG (lucide): herdam currentColor; display:block evita o gap de
+   baseline inline (causa de ícone "descentralizado"); tamanho por contexto ===== */
+.navlink .ic{line-height:0}
+.navlink .ic svg{width:18px;height:18px;display:block}
+.icon-btn svg,.fab svg,.brand .pin svg{display:block}
+.icon-btn svg{width:20px;height:20px}
+.fab.sm svg{width:var(--fab-glyph-sm);height:var(--fab-glyph-sm)}
+.fab.lg svg{width:var(--fab-glyph-lg);height:var(--fab-glyph-lg)}
+.fab.like svg{fill:currentColor}            /* coração preenchido no FAB principal */
+.ic-inline{width:1em;height:1em;flex:0 0 auto;vertical-align:-.15em}
+.score-pill .ic-inline{fill:currentColor}
+.match-avatar svg{width:24px;height:24px;color:var(--on-photo)}
+.empty .big svg,.empty-inline .big svg{width:56px;height:56px;color:var(--coral-strong)}
+.big.spin svg{width:48px;height:48px}
+
+/* ===== Badges de notificação (mensagens não lidas) ===== */
+/* Badge no item "Matches" da navegação (canto superior direito). */
+.nav-badge{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;background:var(--coral-strong);color:#fff;font-size:11px;font-weight:var(--fw-extrabold);line-height:1;border-radius:var(--radius-pill);box-shadow:0 0 0 2px var(--bg)}
+/* Badge de contagem na linha de match (lista de conversas). */
+.match-badge{flex:0 0 auto;min-width:22px;height:22px;padding:0 var(--sp-2);display:grid;place-items:center;background:var(--coral-strong);color:#fff;font-size:var(--text-xs);font-weight:var(--fw-extrabold);line-height:1;border-radius:var(--radius-pill)}
+/* Realce da linha com mensagens novas. */
+.match-row.unread{box-shadow:var(--shadow-1),inset 3px 0 0 var(--coral-strong)}
+.match-row.unread .match-meta span{color:var(--coral-text);font-weight:var(--fw-extrabold)}
+/* Ícone de conversa (à direita da linha). */
+.match-go{display:inline-flex;align-items:center}
+.match-go svg{width:20px;height:20px;display:block}
+/* Badge compacto no painel lateral do dashboard. */
+.panel-match .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel-badge{flex:0 0 auto;margin-left:auto;min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;background:var(--coral-strong);color:#fff;font-size:11px;font-weight:var(--fw-extrabold);line-height:1;border-radius:var(--radius-pill)}
+
+/* Deck: pilha de cards sobrepostos, centralizada num "palco" de tamanho fixo. */
+.deck-wrap{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:var(--sp-2) 0}
+/* Contrato: max-width do palco ~380px (o limiar de swipe é em pixels). */
+.deck-stage{position:relative;width:100%;max-width:380px;height:100%;max-height:620px}
+.deck{position:absolute;inset:0}
+.card{position:absolute;inset:0;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--card-shadow);background:var(--surface);will-change:transform;touch-action:none;cursor:grab;transform-origin:center 120%;transition:transform .3s ease}
 .card:active{cursor:grabbing}
 .photo{height:100%;width:100%;position:relative;display:flex;align-items:flex-end}
-.emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:140px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.18));user-select:none;pointer-events:none}
-.scrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(20,12,28,.78) 100%)}
-.info{position:relative;padding:22px;color:#fff;width:100%}
-.info h2{font-family:'Baloo 2';font-weight:700;font-size:28px;line-height:1.05}
-.info h2 span{font-weight:600;font-size:20px;opacity:.92}
-.info .meta{display:flex;align-items:center;gap:6px;font-weight:700;opacity:.92;margin-top:4px;font-size:14px}
-.info .bio{margin-top:8px;font-size:14px;opacity:.92;font-weight:600;line-height:1.35}
-.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.tag{background:rgba(255,255,255,.22);backdrop-filter:blur(4px);padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800}
+.emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--emoji-card);filter:drop-shadow(0 10px 18px rgba(0,0,0,.18));user-select:none;pointer-events:none}
+/* Scrim reforçado (começa mais cedo e termina mais escuro) p/ o texto branco
+   sobre a foto passar AA mesmo em fotos claras. */
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(20,12,28,.82) 100%)}
+/* Brilho direcional (verde curtir / vermelho passar) durante o arraste.
+   Contrato: background/opacity/transition são setados por JS — não usar !important. */
+.swipe-tint{position:absolute;inset:0;opacity:0;pointer-events:none}
+.info{position:relative;padding:var(--sp-6);color:var(--on-photo);width:100%;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.info h2{font-family:var(--font-display);font-weight:var(--fw-bold);font-size:var(--text-2xl);line-height:1.05}
+.info h2 span{font-weight:var(--fw-semibold);font-size:var(--text-lg)}
+.info .meta{display:flex;align-items:center;gap:var(--sp-2);font-weight:var(--fw-bold);margin-top:var(--sp-1);font-size:var(--text-sm)}
+.info .bio{margin-top:var(--sp-2);font-size:var(--text-sm);font-weight:var(--fw-semibold);line-height:1.35}
+.tags{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3)}
+.tag{background:rgba(20,12,28,.42);backdrop-filter:blur(4px);padding:var(--sp-1) var(--sp-3);border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:var(--fw-extrabold)}
 
-/* Carimbos "Adotar" / "Passar" que aparecem durante o arraste. */
-.stamp{position:absolute;top:34px;padding:6px 16px;border:4px solid;border-radius:12px;font-family:'Baloo 2';font-weight:800;font-size:30px;text-transform:uppercase;opacity:0;letter-spacing:1px;transition:opacity .1s ease}
-.stamp.like{left:26px;color:var(--mint);border-color:var(--mint);transform:rotate(-16deg)}
-.stamp.nope{right:26px;color:var(--coral);border-color:var(--coral);transform:rotate(16deg)}
+/* Carimbos "Curti" / "Passar" que aparecem durante o arraste.
+   Contrato: opacity é alternada por estilo inline — não usar !important; manter transition. */
+.stamp{position:absolute;top:var(--sp-8);padding:var(--sp-2) var(--sp-4);border:4px solid;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-3xl);text-transform:uppercase;opacity:0;letter-spacing:1px;transition:opacity .1s ease}
+.stamp.like{left:var(--sp-6);color:var(--mint);border-color:var(--mint);transform:rotate(-16deg)}
+.stamp.nope{right:var(--sp-6);color:var(--coral);border-color:var(--coral);transform:rotate(16deg)}
 
 /* Barra de ações inferior (FABs). */
-.actions{display:flex;align-items:center;justify-content:center;gap:18px;padding:14px 0 calc(20px + var(--safe))}
-.fab{border:none;border-radius:50%;cursor:pointer;display:grid;place-items:center;background:#fff;box-shadow:0 8px 22px rgba(36,27,47,.16);transition:transform .12s ease}
+.actions{display:flex;align-items:center;justify-content:center;gap:var(--sp-5);padding:var(--sp-4) 0 calc(var(--sp-5) + var(--safe));position:relative;z-index:20}
+.fab{border:none;border-radius:var(--radius-circle);cursor:pointer;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow-2);transition:transform .12s ease}
 .fab:active{transform:scale(.9)}
 .fab:disabled{opacity:.4;cursor:not-allowed}
-.fab.sm{width:52px;height:52px;font-size:20px}
-.fab.lg{width:68px;height:68px;font-size:28px}
-.fab.nope{color:var(--coral)}
-.fab.like{color:var(--mint)}
-.fab.rewind{color:var(--sun)}
-.fab.info{color:#7C8BFF}
+.fab.sm{width:var(--fab-sm);height:var(--fab-sm);font-size:var(--fab-glyph-sm)}
+.fab.lg{width:var(--fab-lg);height:var(--fab-lg);font-size:var(--fab-glyph-lg)}
+/* Glifos em versões escuras p/ contraste >=3:1 sobre a superfície branca do FAB. */
+.fab.nope{color:var(--coral-deep)}
+.fab.like{color:var(--mint-deep)}
+.fab.rewind{color:var(--sun-deep)}
+.fab.info{color:var(--info)}
 
 /* Estado vazio: acabaram os pets. */
-.empty{position:absolute;inset:8px 16px;border-radius:28px;background:#fff;box-shadow:var(--card-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:10px}
+.empty{position:absolute;inset:0;border-radius:var(--radius-xl);background:var(--surface);box-shadow:var(--card-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--sp-8);gap:var(--sp-3)}
 .empty .big{font-size:64px}
-.empty h3{font-family:'Baloo 2';font-size:24px}
-.empty p{color:var(--muted);font-weight:600;max-width:240px}
-.empty button{margin-top:8px;border:none;background:var(--coral);color:#fff;font-weight:800;font-family:'Baloo 2';font-size:16px;padding:12px 24px;border-radius:14px;cursor:pointer}
+.empty h3{font-family:var(--font-display);font-size:var(--text-xl)}
+.empty p{color:var(--muted);font-weight:var(--fw-semibold);max-width:240px}
+.empty button{margin-top:var(--sp-2);display:inline-flex;align-items:center;justify-content:center;border:none;background:var(--coral-strong);color:#fff;font-weight:var(--fw-extrabold);font-family:var(--font-display);font-size:var(--text-md);min-height:var(--ctl-h-md);padding:0 var(--sp-5);border-radius:var(--radius-md);box-shadow:var(--shadow-coral);cursor:pointer}
+
+/* ===== Área de descoberta (swipe). Mobile: coluna única; desktop: 2 colunas. ===== */
+.discover{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 var(--sp-4) var(--sp-2)}
+.deck-col{flex:1;min-height:0;display:flex;flex-direction:column}
+.deck-col .feed-hint{text-align:center;padding:var(--sp-1) 0 var(--sp-2)}
+/* Painel lateral (só no desktop — ver media query). */
+.side-panel{display:none}
+.panel-card{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);box-shadow:var(--shadow-1);display:flex;flex-direction:column;gap:var(--sp-3)}
+.panel-title{font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-md);display:flex;align-items:center;gap:var(--sp-2)}
+.panel-title .count{background:var(--coral-strong);color:#fff;font-size:var(--text-xs);min-width:22px;height:22px;border-radius:var(--radius-pill);display:inline-grid;place-items:center;padding:0 var(--sp-2)}
+.panel-pet{display:flex;flex-direction:column;gap:var(--sp-1)}
+.panel-pet strong{font-family:var(--font-display);font-size:var(--text-md)}
+.panel-pet span{color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-sm)}
+.panel-empty{color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-sm);line-height:1.4}
+.panel-matches{display:flex;flex-direction:column;gap:var(--sp-2)}
+.panel-match{display:flex;align-items:center;gap:var(--sp-3);border:none;background:var(--surface-2);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);cursor:pointer;text-align:left;transition:background .12s ease}
+.panel-match:hover{background:var(--surface-3)}
+.panel-match .nm{font-weight:var(--fw-extrabold);font-size:var(--text-base);color:var(--ink)}
+.match-avatar.sm{width:var(--avatar-sm);height:var(--avatar-sm);font-size:var(--text-lg)}
+.panel-all{border:none;background:transparent;color:var(--coral-text);font-weight:var(--fw-extrabold);font-size:var(--text-sm);cursor:pointer;padding:var(--sp-1);text-align:left}
 
 /* Tela de match (overlay em tela cheia). */
-.overlay{position:absolute;inset:0;z-index:50;display:flex;background:radial-gradient(120% 90% at 50% 30%,rgba(255,107,94,.96),rgba(25,182,163,.96));flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:30px;animation:fade .25s ease}
-.overlay .title{font-family:'Baloo 2';font-weight:800;font-size:46px;line-height:1;text-shadow:0 4px 12px rgba(0,0,0,.2)}
-.overlay .sub{font-weight:700;margin-top:10px;font-size:17px;max-width:260px;opacity:.95}
-.matchface{font-size:120px;margin-bottom:6px;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
-.overlay .row{display:flex;flex-direction:column;gap:10px;margin-top:26px;width:100%;max-width:280px}
-.overlay .primary{background:#fff;color:var(--coral-deep);border:none;font-family:'Baloo 2';font-weight:800;font-size:16px;padding:14px;border-radius:14px;cursor:pointer}
-.overlay .ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7);font-weight:800;font-size:15px;padding:12px;border-radius:14px;cursor:pointer}
+.overlay{position:absolute;inset:0;z-index:50;display:flex;background:radial-gradient(120% 90% at 50% 30%,rgba(var(--coral-rgb),.96),rgba(25,182,163,.96));flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:var(--sp-8);animation:fade .25s ease}
+.overlay .title{font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-display);line-height:1;text-shadow:0 4px 12px rgba(0,0,0,.2)}
+.overlay .sub{font-weight:var(--fw-bold);margin-top:var(--sp-3);font-size:var(--text-md);max-width:260px;opacity:.95}
+.matchface{font-size:var(--emoji-match);margin-bottom:var(--sp-2);animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
+.overlay .row{display:flex;flex-direction:column;gap:var(--sp-3);margin-top:var(--sp-6);width:100%;max-width:280px}
+.overlay .primary{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:var(--coral-deep);border:none;font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-md);min-height:var(--ctl-h-md);padding:0 var(--sp-5);border-radius:var(--radius-md);cursor:pointer}
+.overlay .ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7);font-weight:var(--fw-extrabold);font-size:var(--text-base);min-height:var(--ctl-h-md);padding:0 var(--sp-5);border-radius:var(--radius-md);cursor:pointer}
 
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
@@ -97,8 +273,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .photo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
 
 /* ===== Header com ações (cadastrar + recarregar) ===== */
-.header-actions{display:flex;align-items:center;gap:10px}
-.btn-pill{border:none;cursor:pointer;background:var(--coral);color:#fff;font-family:'Baloo 2';font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;box-shadow:0 6px 16px rgba(255,107,94,.35);transition:transform .12s ease,filter .12s ease}
+.header-actions{display:flex;align-items:center;gap:var(--sp-3)}
+.btn-pill{display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;background:var(--coral-strong);color:#fff;font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-base);min-height:var(--ctl-h-sm);padding:0 var(--sp-4);border-radius:var(--radius-pill);box-shadow:var(--shadow-coral-sm);transition:transform .12s ease,filter .12s ease}
 .btn-pill:active{transform:scale(.95)}
 .btn-pill:hover{filter:brightness(1.05)}
 
@@ -107,123 +283,183 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== Tela de match: foto circular do pet ===== */
-.matchface-img{width:140px;height:140px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.25);margin-bottom:8px;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
+.matchface-img{width:var(--avatar-lg);height:var(--avatar-lg);border-radius:var(--radius-circle);object-fit:cover;border:5px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.25);margin-bottom:var(--sp-2);animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
 
 /* ===== Tela de cadastro de pet ===== */
-.register-body{flex:1;overflow-y:auto;padding:8px 20px 28px}
-.register-title{font-family:'Baloo 2';font-weight:800;font-size:30px;line-height:1.1;margin-bottom:4px}
-.register-sub{color:var(--muted);font-weight:600;font-size:15px;margin-bottom:18px}
+.register-body{flex:1;overflow-y:auto;padding:var(--sp-4) var(--gutter) var(--sp-6)}
+.register-title{font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-3xl);line-height:1.1;margin-bottom:var(--sp-1)}
+.register-sub{color:var(--muted);font-weight:var(--fw-semibold);font-size:var(--text-base);margin-bottom:var(--sp-5)}
 
-.form{display:flex;flex-direction:column;gap:14px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field>span{font-weight:800;font-size:13px;color:var(--ink)}
+.form{display:flex;flex-direction:column;gap:var(--sp-4)}
+.field{display:flex;flex-direction:column;gap:var(--sp-2)}
+.field>span{font-weight:var(--fw-extrabold);font-size:var(--text-sm);color:var(--ink)}
 .field input,.field select,.field textarea{
-  font-family:'Nunito',system-ui,sans-serif;font-size:15px;font-weight:600;color:var(--ink);
-  background:#fff;border:2px solid #F0E6DC;border-radius:14px;padding:12px 14px;outline:none;width:100%;
+  font-family:var(--font-body);font-size:var(--text-base);font-weight:var(--fw-semibold);color:var(--ink);
+  background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-md);min-height:var(--ctl-h-md);padding:0 var(--sp-4);outline:none;width:100%;
   transition:border-color .15s ease,box-shadow .15s ease;
 }
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--coral);box-shadow:0 0 0 4px rgba(255,107,94,.12)}
-.field textarea{resize:vertical;min-height:64px}
-.field-row{display:flex;gap:12px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--coral);box-shadow:var(--focus-ring)}
+.field textarea{resize:vertical;min-height:88px;padding-top:var(--sp-3);padding-bottom:var(--sp-3)}
+/* Input de arquivo: não herdar a altura/padding de campo de texto (o botão
+   nativo desalinha com padding:0); aparência própria de seletor de arquivo. */
+.field input[type="file"]{min-height:auto;padding:var(--sp-2) var(--sp-3);border-style:dashed;font-size:var(--text-sm);cursor:pointer}
+.field-row{display:flex;gap:var(--sp-3)}
 .field-row .field{flex:1;min-width:0}
-.age-input{display:flex;gap:8px}
+.age-input{display:flex;gap:var(--sp-2)}
 .age-input input{flex:1;min-width:0}
 .age-input select{width:auto;flex:0 0 auto}
 
-.photo-preview{width:100%;height:200px;object-fit:cover;border-radius:18px;box-shadow:var(--card-shadow);margin-bottom:4px}
+.photo-preview{width:100%;height:200px;object-fit:cover;border-radius:var(--radius-lg);box-shadow:var(--card-shadow);margin-bottom:var(--sp-1)}
 
-.form-error{background:#FFE3DF;color:var(--coral-deep);font-weight:700;font-size:14px;padding:10px 14px;border-radius:12px}
+.form-error{background:var(--danger-bg);color:var(--coral-deep);font-weight:var(--fw-bold);font-size:var(--text-base);padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-md)}
 
-.form-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-.btn-primary{border:none;cursor:pointer;background:var(--coral);color:#fff;font-family:'Baloo 2';font-weight:800;font-size:16px;padding:14px;border-radius:14px;box-shadow:0 8px 22px rgba(255,107,94,.32);transition:transform .12s ease,filter .12s ease}
+.form-actions{display:flex;flex-direction:column;gap:var(--sp-3);margin-top:var(--sp-2)}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;background:var(--coral-strong);color:#fff;font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-md);min-height:var(--ctl-h-md);padding:0 var(--sp-5);border-radius:var(--radius-md);box-shadow:var(--shadow-coral);transition:transform .12s ease,filter .12s ease}
 .btn-primary:active{transform:scale(.98)}
 .btn-primary:hover{filter:brightness(1.05)}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
-.btn-ghost-dark{border:2px solid #E7DCD2;background:#fff;color:var(--muted);font-weight:800;font-size:15px;padding:12px;border-radius:14px;cursor:pointer}
+.btn-ghost-dark{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--border-strong);background:var(--surface);color:var(--ink);font-weight:var(--fw-extrabold);font-size:var(--text-base);min-height:var(--ctl-h-md);padding:0 var(--sp-5);border-radius:var(--radius-md);cursor:pointer}
 .btn-ghost-dark:disabled{opacity:.6;cursor:not-allowed}
 
 /* ===== Score de match e motivos no card (feed recomendado) ===== */
-.score-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,107,94,.95);color:#fff;font-family:'Baloo 2';font-weight:800;font-size:14px;padding:5px 12px;border-radius:999px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
-.reasons{margin-top:8px;font-size:12.5px;font-weight:700;opacity:.95;line-height:1.3}
+.score-pill{display:inline-flex;align-items:center;gap:var(--sp-1);background:var(--coral-strong);color:#fff;font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-base);padding:var(--sp-1) var(--sp-3);border-radius:var(--radius-pill);margin-bottom:var(--sp-3);box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.reasons{margin-top:var(--sp-2);font-size:var(--text-xs);font-weight:var(--fw-bold);line-height:1.3}
 
 /* Linha "Recomendados para <pet>" abaixo do header. */
-.feed-hint{padding:0 20px 6px;font-size:13px;font-weight:700;color:var(--muted)}
+.feed-hint{padding:0 var(--gutter) var(--sp-2);font-size:var(--text-sm);font-weight:var(--fw-bold);color:var(--muted)}
 .feed-hint b{color:var(--ink)}
 
 /* ===========================================================================
-   Responsividade por tamanho de tela.
-   - Celular (padrão): o app ocupa a tela inteira.
-   - Tablet/notebook/desktop: vira um "frame" centralizado, com altura limitada
-     e sombra, em vez de uma coluna esticada na altura toda do monitor.
+   Responsividade por tamanho de tela (foco em desktop/notebook).
+   - Desktop/notebook (>=860px): painel largo com barra de topo e, na descoberta,
+     duas colunas (deck de swipe + painel lateral).
+   - Telas estreitas (celular): coluna única, painel lateral oculto e a navegação
+     da barra de topo fica só com ícones.
    =========================================================================== */
 
-/* Tablets, notebooks e desktops (a partir de ~700px de largura). */
-@media (min-width: 700px) {
-  body {
-    align-items: center; /* centraliza o frame na vertical também */
-    padding: 24px;
+/* Desktop e notebooks. */
+@media (min-width: 860px) {
+  .app { max-width: var(--w-wide); }
+  /* .app.register / .app.chat herdam --w-read da regra base (mais específica). */
+
+  /* Dashboard de descoberta em duas colunas (linha ocupa a altura toda para o
+     "palco" do deck não colapsar). */
+  .discover {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--sp-6);
+    padding: var(--sp-4) var(--gutter) var(--sp-4);
   }
-  .app {
-    height: min(100dvh - 48px, 900px); /* não estica em monitores altos */
-    max-width: 440px;
-    border-radius: 32px;
-    overflow: hidden;
-    background: var(--bg);
-    box-shadow: 0 30px 80px -24px rgba(36, 27, 47, 0.5);
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    overflow-y: auto;
+    padding-top: var(--sp-2);
   }
+
+  /* Conteúdo das telas de lista/chat: centralizado e com largura legível,
+     enquanto a barra de topo continua ocupando a largura toda. */
+  .list-body { max-width: var(--w-read); margin: 0 auto; width: 100%; }
 }
 
-/* Notebooks/desktops largos: um pouco mais de respiro e de área útil. */
-@media (min-width: 1100px) {
-  .app {
-    max-width: 460px;
-    height: min(100dvh - 64px, 940px);
-  }
+/* Celulares: navegação compacta (só ícones) para a barra de topo não estourar. */
+@media (max-width: 560px) {
+  .topbar { padding: var(--sp-3) var(--sp-4); gap: var(--sp-2); }
+  .topnav { margin-left: var(--sp-2); gap: var(--sp-1); }
+  .navlink { padding: 0 var(--sp-2); }
+  .navlink .lbl { display: none; }
 }
 
 /* ===========================================================================
    Telas de lista (matches, perfil) e chat.
    =========================================================================== */
-.list-body{flex:1;overflow-y:auto;padding:8px 16px 24px;display:flex;flex-direction:column;gap:10px}
-.list-hint{color:var(--muted);font-weight:700;font-size:14px;padding:8px 4px}
+.list-body{flex:1;overflow-y:auto;padding:var(--sp-4) var(--gutter) var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-3)}
+.list-hint{color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-sm);padding:var(--sp-2) var(--sp-1)}
 
-.empty-inline{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:48px 24px;color:var(--muted)}
+.empty-inline{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:var(--sp-2);padding:var(--sp-12) var(--sp-6);color:var(--muted)}
 .empty-inline .big{font-size:56px}
-.empty-inline h3{font-family:'Baloo 2';font-size:22px;color:var(--ink)}
-.empty-inline p{font-weight:600;max-width:260px}
+.empty-inline h3{font-family:var(--font-display);font-size:var(--text-xl);color:var(--ink)}
+.empty-inline p{font-weight:var(--fw-semibold);max-width:260px}
 
 /* Linha de match / pet (lista). */
-.match-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;cursor:pointer;background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 6px 16px rgba(36,27,47,.08)}
+.match-row{display:flex;align-items:center;gap:var(--sp-3);width:100%;text-align:left;border:none;cursor:pointer;background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-3) var(--sp-4);box-shadow:var(--shadow-1)}
 .match-row.static{cursor:default}
 .match-row:active:not(.static){transform:scale(.99)}
-.match-avatar{width:54px;height:54px;border-radius:50%;overflow:hidden;flex:0 0 auto;display:grid;place-items:center;background:linear-gradient(150deg,#FFB36B,#FF6B5E);font-size:28px}
+.match-avatar{width:var(--avatar-md);height:var(--avatar-md);border-radius:var(--radius-circle);overflow:hidden;flex:0 0 auto;display:grid;place-items:center;background:linear-gradient(150deg,var(--coral),var(--coral-strong));font-size:var(--text-2xl)}
 .match-avatar img{width:100%;height:100%;object-fit:cover}
 .match-meta{flex:1;min-width:0;display:flex;flex-direction:column}
-.match-meta strong{font-family:'Baloo 2';font-size:17px;color:var(--ink)}
-.match-meta span{color:var(--muted);font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.match-go{color:var(--coral);font-weight:800;font-size:13px;flex:0 0 auto}
+.match-meta strong{font-family:var(--font-display);font-size:var(--text-md);color:var(--ink)}
+.match-meta span{color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match-go{color:var(--coral-text);font-weight:var(--fw-extrabold);font-size:var(--text-sm);flex:0 0 auto}
 .icon-btn.danger{color:var(--coral-deep)}
 
 /* Perfil. */
-.profile-card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 6px 16px rgba(36,27,47,.08);display:flex;flex-direction:column;gap:12px}
-.profile-account{display:flex;align-items:center;gap:12px}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-family:'Baloo 2';font-weight:800;font-size:18px}
-.auth-switch{text-align:center;color:var(--muted);font-weight:700;font-size:14px}
-.auth-switch a{color:var(--coral);font-weight:800;text-decoration:none}
+.profile-card{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);box-shadow:var(--shadow-1);display:flex;flex-direction:column;gap:var(--sp-3)}
+.profile-account{display:flex;align-items:center;gap:var(--sp-3)}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin-top:var(--sp-2);font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-md)}
+.auth-switch{text-align:center;color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-base)}
+.auth-switch a{color:var(--coral-text);font-weight:var(--fw-extrabold);text-decoration:none}
 
 /* Botão de geolocalização no cadastro de pet. */
-.geo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.geo-msg{font-weight:700;font-size:13px;color:var(--mint)}
-.auth-hint{font-weight:700;font-size:12.5px;color:var(--muted)}
+.geo-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.geo-msg{font-weight:var(--fw-bold);font-size:var(--text-sm);color:var(--mint-deep)}
+.auth-hint{font-weight:var(--fw-bold);font-size:var(--text-xs);color:var(--muted)}
 
-/* Chat. */
-.chat-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
-.bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-weight:600;font-size:15px;line-height:1.35;word-break:break-word}
-.bubble.me{align-self:flex-end;background:var(--coral);color:#fff;border-bottom-right-radius:6px}
-.bubble.them{align-self:flex-start;background:#fff;color:var(--ink);box-shadow:0 4px 12px rgba(36,27,47,.08);border-bottom-left-radius:6px}
-.chat-input{display:flex;gap:8px;padding:12px 16px calc(16px + var(--safe));border-top:1px solid #F0E6DC;background:var(--bg)}
-.chat-input input{flex:1;min-width:0;font-family:'Nunito',system-ui,sans-serif;font-size:15px;font-weight:600;background:#fff;border:2px solid #F0E6DC;border-radius:999px;padding:11px 16px;outline:none}
-.chat-input input:focus{border-color:var(--coral)}
+/* ===================== Chat ===================== */
+
+/* Visualmente oculto, mas lido por leitores de tela (prefixo de autor). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* Cabeçalho do interlocutor: deixa explícito COM QUEM se conversa. */
+.chat-peer{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--gutter) var(--sp-3);border-bottom:1px solid var(--border)}
+.chat-peer-avatar{width:var(--avatar-sm);height:var(--avatar-sm);flex:0 0 auto;border-radius:var(--radius-circle);overflow:hidden;display:grid;place-items:center;background:linear-gradient(150deg,var(--coral),var(--coral-strong));font-size:var(--text-lg)}
+.chat-peer-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-peer-meta{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.chat-peer-meta strong{font-family:var(--font-display);font-weight:var(--fw-extrabold);font-size:var(--text-md);color:var(--ink)}
+.chat-peer-meta span{color:var(--muted);font-weight:var(--fw-bold);font-size:var(--text-sm)}
+
+.chat-body{flex:1;overflow-y:auto;padding:var(--sp-4) var(--gutter);display:flex;flex-direction:column;gap:var(--sp-1)}
+
+/* Separador de dia (centralizado, discreto). */
+.chat-day{display:flex;align-items:center;justify-content:center;margin:var(--sp-3) 0 var(--sp-2)}
+.chat-day span{background:var(--surface-3);color:var(--muted);font-weight:var(--fw-extrabold);font-size:var(--text-xs);padding:var(--sp-1) var(--sp-3);border-radius:var(--radius-pill)}
+
+/* Linha de mensagem: gutter de avatar (interlocutor) + coluna da bolha. */
+.msg-row{display:flex;align-items:flex-end;gap:var(--sp-2);margin-top:var(--sp-1)}
+.msg-row.first{margin-top:var(--sp-3)}                 /* respira entre sequências */
+.msg-row.mine{flex-direction:row-reverse}             /* eu = à direita */
+.msg-row.theirs{flex-direction:row}                   /* interlocutor = à esquerda */
+
+/* Gutter fixo do avatar do interlocutor (vazio quando não é o 1º da sequência,
+   mantendo as bolhas seguintes alinhadas sob a primeira). */
+.msg-avatar{width:var(--avatar-sm);height:var(--avatar-sm);flex:0 0 auto;border-radius:var(--radius-circle);overflow:hidden;display:grid;place-items:center;align-self:flex-end}
+.msg-row.theirs .msg-avatar{background:linear-gradient(150deg,var(--coral),var(--coral-strong));font-size:var(--text-md)}
+.msg-row.theirs.first .msg-avatar{box-shadow:var(--shadow-1)}
+.msg-avatar:empty{background:transparent;box-shadow:none}
+.msg-avatar img{width:100%;height:100%;object-fit:cover}
+
+/* Coluna: rótulo do autor + bolha + horário (alinhados ao lado certo). */
+.msg-col{display:flex;flex-direction:column;max-width:78%;min-width:0}
+.msg-row.mine .msg-col{align-items:flex-end}
+.msg-row.theirs .msg-col{align-items:flex-start}
+.msg-name{font-weight:var(--fw-extrabold);font-size:var(--text-xs);color:var(--muted);padding:0 var(--sp-2) var(--sp-1)}
+.msg-row.mine .msg-name{color:var(--coral-text)}
+.msg-time{font-weight:var(--fw-bold);font-size:var(--text-xs);color:var(--muted);padding:var(--sp-1) var(--sp-2) 0}
+
+/* Bolha: max-width agora vive na coluna; mantém raios e quebra de palavra. */
+.bubble{max-width:100%;padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-lg);font-weight:var(--fw-semibold);font-size:var(--text-base);line-height:1.35;word-break:break-word}
+/* EU: fill coral forte + texto branco (AA), à direita, rabo só no fim da sequência. */
+.bubble.me{align-self:flex-end;background:var(--coral-strong);color:#fff}
+.msg-row.last.mine .bubble.me{border-bottom-right-radius:var(--radius-bubble-tail)}
+/* INTERLOCUTOR: superfície clara COM BORDA visível (não depende só da cor), à esquerda. */
+.bubble.them{align-self:flex-start;background:var(--surface);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-1)}
+.msg-row.last.theirs .bubble.them{border-bottom-left-radius:var(--radius-bubble-tail)}
+
+.chat-input{display:flex;gap:var(--sp-2);padding:var(--sp-3) var(--gutter) calc(var(--sp-4) + var(--safe));border-top:1px solid var(--border);background:var(--bg)}
+.chat-input input{flex:1;min-width:0;font-family:var(--font-body);font-size:var(--text-base);font-weight:var(--fw-semibold);background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-pill);min-height:var(--ctl-h-md);padding:0 var(--sp-4);outline:none;transition:border-color .15s ease,box-shadow .15s ease}
+.chat-input input:focus{border-color:var(--coral);box-shadow:var(--focus-ring)}
 .chat-input .btn-pill{flex:0 0 auto}
 .chat-input .btn-pill:disabled{opacity:.5;cursor:not-allowed}
 
@@ -236,11 +472,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
   .fab.lg {
     width: 60px;
     height: 60px;
-    font-size: 25px;
   }
+  .fab.lg svg { width: 30px; height: 30px; }
   .fab.sm {
     width: 46px;
     height: 46px;
-    font-size: 18px;
   }
+  .fab.sm svg { width: 22px; height: 22px; }
 }

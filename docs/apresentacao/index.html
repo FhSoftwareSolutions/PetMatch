@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PetMatch — Apresentação (slides)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#FFF3E9; --bg-soft:#FFE0CF; --surface:#fff; --surface-2:#FBF4EE;
+    --ink:#241B2F; --muted:#675C73; --border:#EADBCC;
+    --coral:#FF6B5E; --coral-strong:#CE3A2D; --coral-text:#C4382B;
+    --mint:#19B6A3; --mint-deep:#0E7A6E; --sun:#FFC94B; --info:#5567C9;
+    --font-display:'Baloo 2',system-ui,sans-serif; --font-body:'Nunito',system-ui,sans-serif;
+    --radius:18px; --shadow:0 10px 30px -12px rgba(36,27,47,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);color:var(--ink);background:radial-gradient(120% 70% at 50% -10%,var(--bg-soft),var(--bg) 55%);line-height:1.55;overflow:hidden;height:100vh}
+  h1,h2,h3,h4{font-family:var(--font-display);line-height:1.12;letter-spacing:-.5px}
+  a{color:var(--coral-text);font-weight:700}
+  code,pre{font-family:'Cascadia Code',Consolas,'Courier New',monospace}
+
+  /* Progress bar */
+  #progress{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(36,27,47,.08);z-index:50}
+  #bar{height:100%;width:0;background:linear-gradient(90deg,var(--coral),var(--mint));transition:width .35s ease}
+
+  /* Deck & slides */
+  #deck{position:fixed;inset:0}
+  .slide{position:absolute;inset:0;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .35s ease}
+  .slide.active{opacity:1;pointer-events:auto}
+  .inner{min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;max-width:1060px;margin:0 auto;padding:7vh 6vw 12vh}
+
+  .sec-tag{align-self:flex-start;font-weight:800;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--coral-text);background:#FFE3DF;padding:5px 12px;border-radius:999px}
+  .slide h2{font-size:clamp(26px,4.2vw,40px);margin:12px 0 6px}
+  .slide .lead{color:var(--muted);font-weight:600;font-size:clamp(15px,1.9vw,18px);max-width:820px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:14px;margin-top:16px}
+  @media(min-width:760px){.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:1fr 1fr 1fr}}
+  .mini h3{font-size:18px;margin-bottom:3px}
+  .mini p{color:var(--muted);font-weight:600;font-size:14px}
+  .mini .ic{font-size:24px}
+  ul.clean{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  ul.clean li{padding-left:24px;position:relative;font-weight:600;font-size:14.5px}
+  ul.clean li::before{content:'';position:absolute;left:0;top:8px;width:10px;height:10px;border-radius:50%;background:var(--mint)}
+  ul.clean li b{color:var(--ink)}
+  .note{background:var(--surface-2);border-left:4px solid var(--coral);border-radius:10px;padding:11px 15px;font-weight:600;margin-top:14px;font-size:14.5px}
+
+  /* Code */
+  .code{margin-top:14px;border-radius:13px;overflow:hidden;box-shadow:0 14px 34px -14px rgba(0,0,0,.5);border:1px solid #2a2440}
+  .code .file{background:#2a2440;color:#cdbff0;font:700 12px var(--font-body);padding:8px 13px;display:flex;align-items:center;gap:7px}
+  .code .file .d{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .code .file .path{margin-left:5px;font-family:'Cascadia Code',Consolas,monospace;font-weight:600}
+  .code pre{background:#15121f;color:#e7ddf5;padding:14px 16px;font-size:12px;line-height:1.55;overflow-x:auto}
+  .code.sm pre{font-size:11px;line-height:1.5}
+  .cm{color:#8a7fb0;font-style:italic}.kw{color:#ff8a7a;font-weight:700}.st{color:#46d0bd}
+
+  /* Hero */
+  .hero-title{font-size:clamp(48px,9vw,96px);margin:14px 0 8px;text-align:center}
+  .hero-title .c{color:var(--coral)}.hero-title .m{color:var(--mint-deep)}
+  .hero-sub{font-size:clamp(17px,2.6vw,23px);color:var(--muted);font-weight:700;text-align:center;max-width:740px;margin:0 auto}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+  .chip{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-weight:800;font-size:13px;box-shadow:0 4px 12px rgba(36,27,47,.06)}
+  .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+  .people{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+  .person{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 16px;box-shadow:0 4px 12px rgba(36,27,47,.06);font-weight:800;text-align:center}
+  .person small{display:block;color:var(--coral-text);font-weight:800;font-size:12px;margin-top:1px}
+  .center{align-items:center;text-align:center}
+
+  /* Steps (roteiro/checklist) */
+  .step{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--border)}
+  .step:last-child{border-bottom:0}
+  .step .n{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--coral-strong);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+  .step .n.ok{background:var(--mint-deep)}
+  .step b{font-family:var(--font-display)}
+  .step span{color:var(--muted);font-weight:600;font-size:14px}
+
+  .arch{font-family:'Cascadia Code',Consolas,monospace;background:#15121f;color:#e7ddf5;border-radius:13px;padding:16px;font-size:12px;line-height:1.55;overflow-x:auto;margin-top:14px}
+  .arch .c{color:#ff8a7a}.arch .m{color:#46d0bd}
+
+  /* Screenshots */
+  .shots{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+  figure{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);width:300px;max-width:46vw}
+  figure img{display:block;width:100%;height:200px;object-fit:cover;object-position:top;background:var(--bg)}
+  figure.evi img{height:auto;max-height:40vh;object-fit:contain}
+  figcaption{padding:9px 13px;font-weight:700;font-size:12.5px;color:var(--muted)}
+  figcaption b{color:var(--ink)}
+
+  /* Controls */
+  #controls{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 8px;box-shadow:var(--shadow)}
+  #controls button{width:40px;height:40px;border:none;border-radius:50%;background:var(--coral-strong);color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center;transition:filter .12s,transform .12s}
+  #controls button:hover{filter:brightness(1.07)} #controls button:active{transform:scale(.92)}
+  #controls button:disabled{opacity:.35;cursor:default}
+  #counter{font-weight:800;font-size:14px;min-width:54px;text-align:center;color:var(--ink)}
+  #hint{position:fixed;bottom:22px;right:20px;z-index:50;color:var(--muted);font-weight:700;font-size:12.5px;opacity:.8}
+  .brand-mini{position:fixed;top:16px;left:20px;z-index:50;font-family:var(--font-display);font-weight:800;font-size:18px}
+  .brand-mini .p{color:var(--coral)}.brand-mini .m{color:var(--mint-deep)}
+  @media(max-width:600px){#hint{display:none}}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="bar"></div></div>
+<div class="brand-mini"><span class="p">🐾</span> Pet<span class="m">Match</span></div>
+
+<main id="deck">
+
+  <!-- 1 · CAPA -->
+  <section class="slide">
+    <div class="inner center">
+      <span class="sec-tag" style="align-self:center">Projeto NoSQL · MongoDB · CRUD persistido</span>
+      <h1 class="hero-title">Pet<span class="c">Match</span> <span class="m">🐾</span></h1>
+      <p class="hero-sub"><b>“Tinder para pets”</b> — conecta tutores para <b>cruzamento</b> ou <b>socialização</b> com recomendação por <b>geolocalização</b>, swipe, match recíproco, chat e notificações.</p>
+      <div class="chips">
+        <span class="chip"><span class="dot" style="background:var(--mint)"></span>React + Vite + TS</span>
+        <span class="chip"><span class="dot" style="background:var(--coral)"></span>NestJS + Mongoose</span>
+        <span class="chip"><span class="dot" style="background:var(--sun)"></span>MongoDB (2dsphere)</span>
+        <span class="chip"><span class="dot" style="background:var(--info)"></span>FastAPI (motor de IA)</span>
+      </div>
+      <div class="people">
+        <div class="person">Lucas<small>IA</small></div>
+        <div class="person">Gustavo<small>Banco</small></div>
+        <div class="person">Jonah<small>Frontend</small></div>
+        <div class="person">Luis<small>Banco</small></div>
+        <div class="person">Mateus<small>Backend</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · ROTEIRO 5 MIN -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Roteiro · 5 minutos</span>
+      <h2>Como vamos apresentar</h2>
+      <div class="card" style="margin-top:16px">
+        <div class="step"><span class="n">1</span><div><b>0:00–0:45 · Abertura &amp; proposta</b> — <span>Lucas: o problema e a solução.</span></div></div>
+        <div class="step"><span class="n">2</span><div><b>0:45–1:30 · Arquitetura &amp; Backend</b> — <span>Mateus: monorepo, NestJS + Mongoose, o CRUD e o Swagger.</span></div></div>
+        <div class="step"><span class="n">3</span><div><b>1:30–2:45 · Banco MongoDB</b> — <span>Gustavo &amp; Luis: documento Pet, índice 2dsphere e a evidência dos dados.</span></div></div>
+        <div class="step"><span class="n">4</span><div><b>2:45–3:45 · Motor de IA</b> — <span>Lucas: recall (geo) → ranking (compatibilidade).</span></div></div>
+        <div class="step"><span class="n">5</span><div><b>3:45–4:45 · Frontend (demo)</b> — <span>Jonah: swipe, match, chat e notificações.</span></div></div>
+        <div class="step"><span class="n">6</span><div><b>4:45–5:00 · Conclusão</b> — <span>Todos: experiência com NoSQL/MongoDB.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · PROPOSTA -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Resumo da proposta</span>
+      <h2>O problema e a solução</h2>
+      <p class="lead">Achar um par compatível para o pet (brincar ou cruzar) é difícil: grupos de rede social são bagunçados e ignoram <b>proximidade</b> e <b>perfil</b>. O PetMatch traz a fluidez de um app de relacionamento para os pets.</p>
+      <div class="grid cols-3">
+        <div class="card mini"><div class="ic">📍</div><h3>Recomendação por geo</h3><p>Feed prioriza pets próximos (índice <b>2dsphere</b>) e compatíveis.</p></div>
+        <div class="card mini"><div class="ic">💘</div><h3>Swipe &amp; match recíproco</h3><p>Curtir/passar arrastando o card; match só quando os dois curtem.</p></div>
+        <div class="card mini"><div class="ic">💬</div><h3>Chat &amp; notificações</h3><p>Conversa por match com badge de mensagens não lidas.</p></div>
+      </div>
+      <div class="note">Roda <b>ponta a ponta na web</b>: cadastro → feed → swipe → match → chat. Tudo persistido no MongoDB.</div>
+    </div>
+  </section>
+
+  <!-- 4 · ARQUITETURA -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Arquitetura</span>
+      <h2>Monorepo de serviços independentes</h2>
+      <div class="arch">
+PetMatch/
+├── <span class="c">backend-api/</span>            <span class="m">NestJS + Mongoose</span> — CRUD, swipes, matches, chat, auth
+├── <span class="c">recommendation-engine/</span>  <span class="m">Python + FastAPI</span> — motor de recomendação (geo + conteúdo)
+├── <span class="c">web-app/</span>                <span class="m">React + Vite + TS</span> — swipe, chat, dashboard
+├── <span class="c">mobile-app/</span>             <span class="m">React Native + Expo</span> — app mobile (andaime)
+└── <span class="c">docker-compose.yml</span>      <span class="m">MongoDB</span> — infraestrutura local
+      </div>
+      <div class="grid cols-2">
+        <div class="card mini"><h3>Backend = cérebro</h3><p>NestJS expõe o CRUD e orquestra; valida DTOs e publica o Swagger em <code>/docs</code>.</p></div>
+        <div class="card mini"><h3>Motor = ranking</h3><p>FastAPI ordena o feed por proximidade + compatibilidade; o Mongo é a fonte da verdade.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · MODELO NoSQL -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Banco · modelo</span>
+      <h2>O documento <code>Pet</code> (NoSQL)</h2>
+      <p class="lead">Um documento agrega perfil, arrays e um subdocumento GeoJSON. O índice <b>2dsphere</b> habilita busca por proximidade.</p>
+      <div class="code sm">
+        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">backend-api/src/modules/pets/schemas/pet.schema.ts</span></div>
+<pre>@Schema({ collection: <span class="st">'pets'</span>, timestamps: <span class="kw">true</span> })
+<span class="kw">export class</span> Pet {
+  @Prop({ type: ObjectId, ref: <span class="st">'User'</span>, required: <span class="kw">true</span> }) ownerId!: Types.ObjectId;
+  @Prop({ required: <span class="kw">true</span> }) name!: <span class="kw">string</span>;
+  @Prop({ enum: [<span class="st">'socializacao'</span>, <span class="st">'cruzamento'</span>, <span class="st">'ambos'</span>] }) seeking!: <span class="kw">string</span>;
+  @Prop({ type: [<span class="kw">String</span>], default: [] }) temperament!: <span class="kw">string</span>[];
+  @Prop({ type: PetLocation, required: <span class="kw">true</span> }) location!: PetLocation; <span class="cm">// GeoJSON [lng,lat]</span>
+}
+<span class="cm">// Índice geoespacial: busca por proximidade ($nearSphere / $geoNear).</span>
+PetSchema.index({ location: <span class="st">'2dsphere'</span> });</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · CRUD (lúdico) -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Backend · CRUD</span>
+      <h2>CRUD de pets 🐾</h2>
+      <p class="lead">As quatro operações do pet, mapeadas direto para a API REST — tudo persistido no MongoDB (escritas só pelo dono).</p>
+      <div class="grid cols-2">
+        <div class="card mini"><div class="ic">➕</div><h3>Criar</h3><p><code>POST /pets</code> — cadastra um novo pet.</p></div>
+        <div class="card mini"><div class="ic">👀</div><h3>Ler</h3><p><code>GET /pets</code> &amp; <code>/pets/feed</code> — lista e feed.</p></div>
+        <div class="card mini"><div class="ic">✏️</div><h3>Atualizar</h3><p><code>PATCH /pets/:id</code> — edita o perfil.</p></div>
+        <div class="card mini"><div class="ic">🗑️</div><h3>Excluir</h3><p><code>DELETE /pets/:id</code> — remove o pet.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · SWIPE & MATCH -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Regra de negócio</span>
+      <h2>Swipe &amp; match recíproco</h2>
+      <p class="lead">Um like só vira match se o alvo <b>já</b> tinha curtido a origem. Índice único <code>(petId, targetPetId)</code> torna o swipe idempotente.</p>
+      <div class="code sm">
+        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">backend-api/src/modules/matches/swipes.service.ts</span></div>
+<pre><span class="kw">await</span> this.swipeModel.updateOne({ petId, targetPetId },
+  { $set: { type: dto.type, ownerId } }, { upsert: <span class="kw">true</span> }); <span class="cm">// idempotente</span>
+
+<span class="kw">if</span> (dto.type !== <span class="st">'like'</span>) <span class="kw">return</span> { matched: <span class="kw">false</span> };
+<span class="cm">// Match recíproco: o alvo JÁ precisa ter curtido a origem.</span>
+<span class="kw">const</span> reciprocal = <span class="kw">await</span> this.swipeModel.exists({ petId: targetPetId, targetPetId: petId, type: <span class="st">'like'</span> });
+<span class="kw">if</span> (!reciprocal) <span class="kw">return</span> { matched: <span class="kw">false</span> };
+<span class="kw">const</span> match = <span class="kw">await</span> this.matchesService.ensureFromReciprocalLike(petId, targetPetId);
+<span class="kw">return</span> { matched: <span class="kw">true</span>, matchId: match?.id };</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · MOTOR DE IA -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Motor de IA</span>
+      <h2>Recomendação: geo + conteúdo</h2>
+      <p class="lead"><b>recall</b> (quem é elegível) → <b>ranking</b> (em que ordem). Se o motor cair, o feed usa o Mongo direto.</p>
+      <div class="code">
+        <div class="file"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="path">recommendation-engine/app/service.py</span></div>
+<pre><span class="kw">def</span> recommend(db, request, settings):
+    origin = fetch_origin_pet(db, request.pet_id)
+    <span class="cm"># 1) RECALL — candidatos elegíveis por geolocalização + filtros</span>
+    candidates = run_recall(db, origin, request.coordinates, radius_km, seeking, ...)
+    <span class="cm"># 2) RANKING — ordena por compatibilidade (conteúdo) + proximidade</span>
+    ranked = rank_candidates(origin, candidates, weight_distance=..., weight_content=...)
+    <span class="kw">return</span> RecommendationResponse(count=len(ranked), results=ranked)</pre>
+      </div>
+      <div class="note">Resiliente: se o motor cair, o feed usa a consulta geoespacial <code>$nearSphere</code> direto no MongoDB.</div>
+    </div>
+  </section>
+
+  <!-- 9 · CHAT & NOTIFICAÇÕES (lúdico) -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Chat &amp; notificações</span>
+      <h2>Conversas com aviso de novas mensagens 💬</h2>
+      <p class="lead">Cada match vira um chat — e o app avisa quando chega mensagem nova, na navegação e na lista.</p>
+      <div class="grid cols-3">
+        <div class="card mini"><div class="ic">✉️</div><h3>Chega mensagem</h3><p>O outro tutor escreve na conversa do match.</p></div>
+        <div class="card mini"><div class="ic">🔴</div><h3>Badge aparece</h3><p>Contador de não lidas no menu “Matches” e em cada conversa.</p></div>
+        <div class="card mini"><div class="ic">👀</div><h3>Abriu, zerou</h3><p>Ao abrir o chat, marca como lida e o badge some.</p></div>
+      </div>
+      <div class="note">Nos bastidores: uma <b>agregação</b> no MongoDB conta as mensagens não lidas por conversa.</div>
+    </div>
+  </section>
+
+  <!-- 10 · EVIDÊNCIA BD -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Evidência · MongoDB</span>
+      <h2>Dados persistidos no banco</h2>
+      <div class="grid cols-3" style="margin-top:8px">
+        <div class="card mini"><div class="ic">🐾</div><h3>34 pets</h3><p>GeoJSON, arrays e subdocumentos.</p></div>
+        <div class="card mini"><div class="ic">💞</div><h3>5 matches · 104 swipes</h3><p>Relações pet↔pet desnormalizadas.</p></div>
+        <div class="card mini"><div class="ic">✉️</div><h3>19 mensagens</h3><p>Chat persistido com flag <code>read</code>.</p></div>
+      </div>
+      <figure class="evi" style="width:920px;max-width:94%;align-self:center;margin-top:14px">
+        <img src="img/db-evidence.png" alt="Saída real do MongoDB: coleções, contagens e documentos" />
+        <figcaption><b>Saída real</b> de um script lendo o mesmo banco que a API usa (<code>127.0.0.1:27017/petmatch</code>).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 11 · TELAS -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Telas</span>
+      <h2>A aplicação</h2>
+      <div class="shots">
+        <figure><img src="img/dashboard.png" alt="Dashboard" /><figcaption><b>Dashboard:</b> deck de swipe + painel, badge de notificação.</figcaption></figure>
+        <figure><img src="img/chat.png" alt="Chat" /><figcaption><b>Chat:</b> remetente claro, avatar/nome, horário.</figcaption></figure>
+        <figure><img src="img/matches.png" alt="Matches" /><figcaption><b>Matches:</b> badge de não lidas + ícone de conversa.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 · CONCLUSÃO -->
+  <section class="slide">
+    <div class="inner">
+      <span class="sec-tag">Conclusão</span>
+      <h2>Experiência com NoSQL &amp; MongoDB</h2>
+      <div class="grid cols-2">
+        <div class="card"><ul class="clean">
+          <li><b>Documento = JSON do front.</b> O <code>toJSON</code> só troca <code>_id</code> por <code>id</code>; menos tradução.</li>
+          <li><b>Esquema flexível.</b> Campos <code>Mixed</code> (compatibility/metadata) evoluem sem migração.</li>
+          <li><b>Geo nativo.</b> <code>2dsphere</code> + <code>$nearSphere</code> resolvem “pets perto de mim”.</li>
+        </ul></div>
+        <div class="card"><ul class="clean">
+          <li><b>Aggregation.</b> Não lidas por conversa em uma consulta (<code>$match</code>→<code>$group</code>).</li>
+          <li><b>Desnormalização.</b> <code>match.summary</code> evita joins e deixa a lista instantânea.</li>
+          <li><b>Sem joins ⇒</b> integridade fica na aplicação (ex.: <code>pairKey</code> única).</li>
+        </ul></div>
+      </div>
+      <div class="note">O Mongo acelerou o projeto alinhando banco, API e front no mesmo formato; o custo é cuidar da integridade na aplicação — compensado pela flexibilidade.</div>
+    </div>
+  </section>
+
+  <!-- 13 · ENCERRAMENTO -->
+  <section class="slide">
+    <div class="inner center">
+      <span class="sec-tag" style="align-self:center">Entrega ✓</span>
+      <h2>Obrigado! 🐾</h2>
+      <div class="card" style="text-align:left;margin-top:16px;max-width:680px;align-self:center">
+        <div class="step"><span class="n ok">✓</span><div><b>CRUD + dados persistidos</b> — <span>pets no MongoDB local.</span></div></div>
+        <div class="step"><span class="n ok">✓</span><div><b>Relatório &amp; apresentação</b> — <span>integrantes, proposta, telas, evidência e conclusão.</span></div></div>
+        <div class="step"><span class="n ok">✓</span><div><b>Demo</b> — <span>web em <a href="http://localhost:5173">localhost:5173</a> (<code>npm run dev</code> + <code>npm run seed</code>).</span></div></div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:14px">Lucas · Gustavo · Jonah · Luis · Mateus</p>
+    </div>
+  </section>
+
+</main>
+
+<div id="controls">
+  <button id="prev" aria-label="Anterior">‹</button>
+  <span id="counter">1 / 13</span>
+  <button id="next" aria-label="Próximo">›</button>
+</div>
+<div id="hint">← → ou espaço para navegar</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var bar = document.getElementById('bar');
+    var counter = document.getElementById('counter');
+    var prev = document.getElementById('prev');
+    var next = document.getElementById('next');
+    var i = 0;
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+      counter.textContent = (i + 1) + ' / ' + slides.length;
+      bar.style.width = ((i + 1) / slides.length * 100) + '%';
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+      slides[i].scrollTop = 0;
+      try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+    }
+    next.addEventListener('click', function () { show(i + 1); });
+    prev.addEventListener('click', function () { show(i - 1); });
+    document.addEventListener('keydown', function (e) {
+      if (['ArrowRight', 'PageDown', ' ', 'Spacebar'].indexOf(e.key) > -1) { e.preventDefault(); show(i + 1); }
+      else if (['ArrowLeft', 'PageUp'].indexOf(e.key) > -1) { e.preventDefault(); show(i - 1); }
+      else if (e.key === 'Home') { show(0); }
+      else if (e.key === 'End') { show(slides.length - 1); }
+    });
+    window.addEventListener('hashchange', function () {
+      var mm = (location.hash || '').match(/^#s(\d+)/);
+      if (mm) show(+mm[1] - 1);
+    });
+    var m = (location.hash || '').match(/^#s(\d+)/);
+    show(m ? (+m[1] - 1) : 0);
+  })();
+</script>
+
+</body>
+</html>

@@ -9,9 +9,15 @@ import { OwnerId } from '../../common/owner-id.decorator';
 export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
-  /** GET /matches — lista os matches do dono. */
+  /** GET /matches — lista os matches do dono (com `unreadCount` por conversa). */
   @Get()
   list(@OwnerId() ownerId: Types.ObjectId) {
     return this.matchesService.listForOwner(ownerId);
+  }
+
+  /** GET /matches/unread-count — total de mensagens não lidas (badge da navegação). */
+  @Get('unread-count')
+  async unreadCount(@OwnerId() ownerId: Types.ObjectId) {
+    return { count: await this.matchesService.unreadCountForOwner(ownerId) };
   }
 }

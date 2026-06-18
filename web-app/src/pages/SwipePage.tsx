@@ -1,14 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchFeed, fetchPets, recordSwipe, type Pet } from '../services/api';
-import { getMyPet, setMyPet, type MyPet } from '../lib/session';
+import {
+  fetchFeed,
+  fetchPets,
+  fetchMatches,
+  recordSwipe,
+  type Pet,
+  type Match,
+  type MatchPet,
+} from '../services/api';
+import { getMyPet, setMyPet, currentOwnerId, type MyPet } from '../lib/session';
+import { emojiFor, scorePercent, speciesLine, visibleReasons } from '../lib/display';
 import PetCard, { type PetCardHandle, type SwipeDir } from '../components/PetCard';
 import ActionBar from '../components/ActionBar';
 import MatchModal from '../components/MatchModal';
+import TopBar from '../components/TopBar';
 import RegisterPetPage from './RegisterPetPage';
+import { Plus, RotateCw, MapPin, Sparkles, Heart, PawPrint, Frown, Bone } from 'lucide-react';
 
 // Marca, no navegador, que o usuário já passou pelo cadastro inicial.
 const ONBOARDED_KEY = 'petmatch_onboarded';
+
+/** Pet do OUTRO dono no match (o que interessa exibir no painel). */
+function otherPet(match: Match, me: string): MatchPet {
+  return match.summary.ownerA.ownerId === me ? match.summary.petB : match.summary.petA;
+}
 
 /**
  * Tela principal de descoberta.
@@ -23,8 +39,10 @@ export default function SwipePage() {
   const [deck, setDeck] = useState<Pet[]>([]);
   const [history, setHistory] = useState<Pet[]>([]);
   const [match, setMatch] = useState<{ pet: Pet; matchId?: string } | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const me = currentOwnerId();
   // Na 1ª visita (sem pet e sem onboarding) abre o cadastro automaticamente.
   const [showRegister, setShowRegister] = useState(
     () => !getMyPet() && !localStorage.getItem(ONBOARDED_KEY),
@@ -37,6 +55,20 @@ export default function SwipePage() {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myPet?.id]);
+
+  // Carrega os matches para o painel lateral (best-effort; falha não atrapalha).
+  useEffect(() => {
+    void loadMatches();
+  }, []);
+
+  /** Atualiza a lista de matches exibida no painel lateral. */
+  async function loadMatches() {
+    try {
+      setMatches(await fetchMatches());
+    } catch {
+      /* painel é informativo; ignora falhas de rede */
+    }
+  }
 
   /** Busca o feed (recomendado se há origem, simples caso contrário). */
   async function load() {
@@ -67,7 +99,10 @@ export default function SwipePage() {
     // (matched + matchId) para abrir a tela de match. Best-effort: falha não trava.
     void recordSwipe(myPet.id, pet.id, type)
       .then((res) => {
-        if (dir === 'like' && res.matched) setMatch({ pet, matchId: res.matchId });
+        if (dir === 'like' && res.matched) {
+          setMatch({ pet, matchId: res.matchId });
+          void loadMatches(); // novo match entra no painel lateral
+        }
       })
       .catch(() => {
         /* swipe é best-effort; uma falha de rede não interrompe a navegação */
@@ -115,112 +150,168 @@ export default function SwipePage() {
   // Renderiza até 3 cards empilhados; o do topo é o primeiro do array.
   const visible = deck.slice(0, 3);
   const canSwipe = !loading && !error && deck.length > 0;
+  // Pet do topo: alimenta o painel lateral (recomendação atual).
+  const top = deck[0];
+  const topReasons = visibleReasons(top?.reasons);
 
   return (
     <div className="app">
-      <header>
-        <div className="brand">
-          <span className="pin">🐾</span>
-          <b>Pet</b>
-          <i>Match</i>
-        </div>
-        <div className="header-actions">
-          <button
-            className="icon-btn"
-            onClick={() => setShowRegister(true)}
-            title="Cadastrar pet"
-            aria-label="Cadastrar pet"
-          >
-            ➕
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => navigate('/matches')}
-            title="Matches"
-            aria-label="Matches"
-          >
-            💬
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => navigate('/perfil')}
-            title="Perfil"
-            aria-label="Perfil"
-          >
-            👤
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => void load()}
-            title="Recarregar"
-            aria-label="Recarregar"
-          >
-            ↻
-          </button>
-        </div>
-      </header>
-
-      {myPet && (
-        <div className="feed-hint">
-          Recomendados para <b>{myPet.name}</b>
-        </div>
-      )}
-
-      <div className="deck-wrap">
-        {loading && (
-          <div className="empty">
-            <div className="big spin">🐾</div>
-            <p>Carregando pets…</p>
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className="empty">
-            <div className="big">😿</div>
-            <h3>Ops!</h3>
-            <p>{error}</p>
-            <button onClick={() => void load()}>Tentar de novo</button>
-          </div>
-        )}
-
-        {!loading && !error && (
+      <TopBar
+        actions={
           <>
-            <div className="deck">
-              {visible.map((pet, i) => {
-                const isTop = i === 0;
-                return (
-                  <PetCard
-                    key={pet.id}
-                    ref={isTop ? topCardRef : null}
-                    pet={pet}
-                    isTop={isTop}
-                    depth={i}
-                    onSwipe={handleSwipe}
-                  />
-                );
-              })}
-            </div>
+            <button
+              className="icon-btn"
+              onClick={() => setShowRegister(true)}
+              title="Cadastrar pet"
+              aria-label="Cadastrar pet"
+            >
+              <Plus aria-hidden />
+            </button>
+            <button
+              className="icon-btn"
+              onClick={() => void load()}
+              title="Recarregar"
+              aria-label="Recarregar"
+            >
+              <RotateCw aria-hidden />
+            </button>
+          </>
+        }
+      />
 
-            {/* Estado vazio: acabaram os pets do deck. */}
-            {deck.length === 0 && (
-              <div className="empty">
-                <div className="big">🦴</div>
-                <h3>Por enquanto é só!</h3>
-                <p>Você viu todos os pets disponíveis. Cadastre um novo ou recarregue.</p>
-                <button onClick={() => setShowRegister(true)}>Cadastrar um pet</button>
+      <main className="discover">
+        <section className="deck-col">
+          <div className="deck-wrap">
+            <div className="deck-stage">
+              {loading && (
+                <div className="empty">
+                  <div className="big spin"><PawPrint aria-hidden /></div>
+                  <p>Carregando pets…</p>
+                </div>
+              )}
+
+              {!loading && error && (
+                <div className="empty">
+                  <div className="big"><Frown aria-hidden /></div>
+                  <h3>Ops!</h3>
+                  <p>{error}</p>
+                  <button onClick={() => void load()}>Tentar de novo</button>
+                </div>
+              )}
+
+              {!loading && !error && (
+                <>
+                  <div className="deck">
+                    {visible.map((pet, i) => {
+                      const isTop = i === 0;
+                      return (
+                        <PetCard
+                          key={pet.id}
+                          ref={isTop ? topCardRef : null}
+                          pet={pet}
+                          isTop={isTop}
+                          depth={i}
+                          onSwipe={handleSwipe}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Estado vazio: acabaram os pets do deck. */}
+                  {deck.length === 0 && (
+                    <div className="empty">
+                      <div className="big"><Bone aria-hidden /></div>
+                      <h3>Por enquanto é só!</h3>
+                      <p>Você viu todos os pets disponíveis. Cadastre um novo ou recarregue.</p>
+                      <button onClick={() => setShowRegister(true)}>Cadastrar um pet</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          <ActionBar
+            onNope={() => topCardRef.current?.flick('nope')}
+            onLike={() => topCardRef.current?.flick('like')}
+            onRewind={rewind}
+            canRewind={history.length > 0}
+            canSwipe={canSwipe}
+          />
+        </section>
+
+        <aside className="side-panel">
+          <div className="panel-card">
+            <div className="panel-title">
+              Recomendado para <b>{myPet?.name ?? 'você'}</b>
+            </div>
+            {top ? (
+              <>
+                {typeof top.score === 'number' && (
+                  <div className="score-pill">
+                    <Heart className="ic-inline" aria-hidden /> {scorePercent(top.score)}% de match
+                  </div>
+                )}
+                <div className="panel-pet">
+                  <strong>{top.name}</strong>
+                  <span>
+                    <MapPin className="ic-inline" aria-hidden /> {top.city ?? 'Brasil'} •{' '}
+                    {speciesLine(top)}
+                  </span>
+                </div>
+                {topReasons.length > 0 && (
+                  <div className="reasons">
+                    <Sparkles className="ic-inline" aria-hidden /> {topReasons.join(' · ')}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="panel-empty">Sem pets no momento. Recarregue ou cadastre um novo.</p>
+            )}
+          </div>
+
+          <div className="panel-card">
+            <div className="panel-title">
+              Seus matches
+              {matches.length > 0 && <span className="count">{matches.length}</span>}
+            </div>
+            {matches.length === 0 ? (
+              <p className="panel-empty">Quando o interesse for mútuo, eles aparecem aqui.</p>
+            ) : (
+              <div className="panel-matches">
+                {matches.slice(0, 5).map((m) => {
+                  const p = otherPet(m, me);
+                  const unread = m.unreadCount ?? 0;
+                  return (
+                    <button
+                      key={m.id}
+                      className={`panel-match${unread > 0 ? ' unread' : ''}`}
+                      onClick={() => navigate(`/matches/${m.id}`)}
+                    >
+                      <div className="match-avatar sm">
+                        {p.mainPhotoUrl ? (
+                          <img src={p.mainPhotoUrl} alt={p.name ?? 'pet'} />
+                        ) : (
+                          <span>{emojiFor(p.species ?? '')}</span>
+                        )}
+                      </div>
+                      <span className="nm">{p.name ?? 'Pet'}</span>
+                      {unread > 0 && (
+                        <span className="panel-badge" aria-label={`${unread} não lidas`}>
+                          {unread > 9 ? '9+' : unread}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                <button className="panel-all" onClick={() => navigate('/matches')}>
+                  Ver todos →
+                </button>
               </div>
             )}
-          </>
-        )}
-      </div>
-
-      <ActionBar
-        onNope={() => topCardRef.current?.flick('nope')}
-        onLike={() => topCardRef.current?.flick('like')}
-        onRewind={rewind}
-        canRewind={history.length > 0}
-        canSwipe={canSwipe}
-      />
+          </div>
+        </aside>
+      </main>
 
       <MatchModal pet={match?.pet ?? null} onKeep={() => setMatch(null)} onMessage={goToChat} />
     </div>
